@@ -3,20 +3,11 @@ from flask import Flask, jsonify
 import os
 import psycopg2
 from dotenv import load_dotenv
+from models.engine.db_storage import get_db_connection
 
 load_dotenv()
 
 app = Flask(__name__)
-
-def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.getenv('DB_HOST'),
-        port=os.getenv('DB_PORT'),
-        dbname=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD')
-    )
-    return conn
 
 @app.route("/")
 def startApp():
@@ -40,4 +31,5 @@ def home():
     return jsonify({'PostgreSQL version': db_version})
 
 if __name__ == "__main__":
+    get_db_connection()
     app.run(debug=True)
