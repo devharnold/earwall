@@ -3,6 +3,8 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 import dotenv
+from web3 import HTTPProvider
+
 
 app = Flask(__name__)
 

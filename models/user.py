@@ -9,6 +9,7 @@ import os
 from os import getenv
 from models import BaseModel
 from models.engine.db_storage import get_db_connection
+from web3 import HTTPProvider
 
 
 class User(BaseModel):
