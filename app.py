@@ -3,9 +3,14 @@ from flask import Flask, jsonify
 import os
 import psycopg2
 from dotenv import load_dotenv
-from models.engine.db_storage import get_db_connection
+from engine.db_storage import get_db_connection
 
 load_dotenv()
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_HOST = os.getenv('DB_HOST')
+DB_PORT = os.getenv('DB_PORT')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 app = Flask(__name__)
 

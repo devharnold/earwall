@@ -41,8 +41,14 @@ with app.app_context():
         id SERIAL PRIMARY KEY,
         first_name VARCHAR(50) NOT NULL,
         last_name VARCHAR(50) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
+        user_email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
+        account_number  VARCHAR(14) UNIQUE,
+        currency VARCHAR(50),
+        balance NUMERIC DEFAULT 0,
+        paypal_id VARCHAR(100) UNIQUE,
+        paypal_email VARCHAR(100) UNIQUE,
+        is_paypal_verified BOOLEAN DEFAULT FALSE, --verifies if paypal is linked and verified
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """
@@ -53,6 +59,49 @@ with app.app_context():
         print("Table created successfully")
     except Exception as e:
         print("Error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+with app.app_context():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    create_cash_wallet_table_query = """
+    CREATE TABLE IF NOT EXISTS cashwallet (
+        wallet_id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
+        balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """
+    try:
+        cursor.execute(create_cash_wallet_table_query)
+        conn.commit()
+    except Exception as e:
+        print("Error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+with app.app_context():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    create_accounts_table_query = """
+    CREATE TABLE IF NOT EXISTS accounts (
+        account_id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
+        account type VARCHAR(50) NOT NULL,
+        balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """
+    try:
+        cursor.execute(create_accounts_table_query)
+        conn.commit()
+    except Exception as e:
+        print("Error occured: {e}")
     finally:
         cursor.close()
         conn.close()
