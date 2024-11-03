@@ -29,6 +29,7 @@ Summary of the tables relationships
     - Crypto-Wallet: One-to-Many with 'users'
     - EFT methods: One-to-Many with 'users'
     - Audit trail: One-to-Many with 'users'
+    - Business Account: One-to-Many with 'users'
     
 """
 with app.app_context():
@@ -67,16 +68,37 @@ with app.app_context():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    create_cash_wallet_table_query = """
-    CREATE TABLE IF NOT EXISTS cashwallet (
-        wallet_id SERIAL PRIMARY KEY,
+    create_business_account_table_query = """
+    CREATE TABLE IF NOT EXISTS business_account (
+        id SERIAL PRIMARY KEY,
+        business_name VARCHAR(100) NOT NULL,
+        account_balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );"""
+    try:
+        cursor.execute(create_business_account_table_query)
+        conn.commit()
+        print("Table created successfully")
+    except Exception as e:
+        print("Error occurred: {e}")
+    finally:
+        cursor.close()
+        conn.close()
+
+with app.app_context():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    create_cashwallet_table_query = """
+    CREATE TABLE IF NOT EXISTS cashwallets (
+        cashwallet_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
         balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """
     try:
-        cursor.execute(create_cash_wallet_table_query)
+        cursor.execute(create_cashwallet_table_query)
         conn.commit()
     except Exception as e:
         print("Error occurred: {e}")
@@ -116,8 +138,13 @@ with app.app_context():
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         transaction type VARCHAR(50) NOT NULL,
         amount DECIMAL(20, 2) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
         transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status VARCHAR(20) NOT NULL,
+
+        source_account_id INT REFERENCES accounts(account_id) ON DELETE SET NULL,
+        destination_account_id INT REFERENCES accounts(account)id ON DELETE SET NULL,
+        source_cashwallet_id INT REFERENCES cashwallets(cashwallet_id) ON DELETE SET NULL,
+        destination_cashwallet_id INT REFERENCES cashwallets(cashwallet_id) ON DELETE SET NULL
         description TEXT
     );
     """
@@ -137,7 +164,7 @@ with app.app_context():
 
     create_cryptowallets_table_query = """
     CREATE TABLE IF NOT EXISTS crypto-wallet (
-        wallet_id SERIAL PRIMARY KEY,
+        cryptowallet_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         cryptocurrency VARCHAR(50) NOT NULL,
         amount DECIMAL(20, 8) NOT NULL DEFAULT 0.00,

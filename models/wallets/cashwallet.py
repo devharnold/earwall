@@ -65,11 +65,11 @@ class CashWallet:
         
         try:
             connection = psycopg2.connect(
-                dbname=DB_NAME,
-                dbuser=DB_USER,
-                dbport=DB_PORT,
-                dbhost=DB_HOST,
-                dbpassword=DB_PASSWORD
+                name=DB_NAME,
+                user=DB_USER,
+                port=DB_PORT,
+                host=DB_HOST,
+                password=DB_PASSWORD
             )
             cursor = connection.cursor()
 
@@ -92,11 +92,11 @@ class CashWallet:
     def delete_wallet(cls, user_id: int, wallet_id: int, balance: int):
         try:
             connection = psycopg2.connect(
-                dbname=DB_NAME,
-                dbhost=DB_HOST,
-                dbport=DB_PORT,
-                dbuser=DB_USER,
-                dbpassword=DB_PASSWORD
+                name=DB_NAME,
+                host=DB_HOST,
+                port=DB_PORT,
+                user=DB_USER,
+                password=DB_PASSWORD
             )
             cursor = connection.cursor()
 
@@ -132,11 +132,11 @@ class CashWallet:
     def deactivate_wallet(cls, user_email: str, wallet_id: int, expiration_days: int, datetime):
         try:
             connection = psycopg2.connect(
-                dbname=DB_NAME,
-                dbuser=DB_USER,
-                dbport=DB_PORT,
-                dbhost=DB_HOST,
-                dbpassword=DB_PASSWORD
+                name=DB_NAME,
+                user=DB_USER,
+                port=DB_PORT,
+                host=DB_HOST,
+                password=DB_PASSWORD
             )
             cursor = connection.cursor()
 
