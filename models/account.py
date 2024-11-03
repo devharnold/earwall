@@ -10,7 +10,7 @@ import os
 import random
 from os import getenv
 from models import BaseModel
-from models.engine.db_storage import get_db_connection
+from engine.db_storage import get_db_connection
 from web3 import HTTPProvider
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import request, jsonify
@@ -59,10 +59,11 @@ class Account(BaseModel):
 
         try:
             connection = psycopg2.connect(
-                dbname=DB_NAME,
-                dbport=DB_PORT,
-                dbhost=DB_HOST,
-                dbpassword=DB_PASSWORD,
+                name=DB_NAME,
+                port=DB_PORT,
+                user=DB_USER,
+                host=DB_HOST,
+                password=DB_PASSWORD,
             )
             cursor = connection.cursor()
 
@@ -79,19 +80,3 @@ class Account(BaseModel):
         finally:
             cursor.close()
             connection.close()
-        
-    def update_account(user_id, stored_hashed_password: str):
-        data = request.get_json()
-        username = data['username']
-        plain_password = data['password']
-
-        def verify_password(input_password: str, hashed_password: str) -> bool:
-            if verify_password(input_password: str, stored_hashed_password: str):
-            
-            return check_password_hash(hashed_password, input_password)
-
-        print("Username:", username)
-        print("Input Password:", plain_password)
-        print("Stored Password:", stored_hashed_password)
-
-        #if verify_password(input_password: str, stored_hashed_password: str):

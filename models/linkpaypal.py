@@ -1,7 +1,5 @@
 from flask import request, jsonify
-import psycopg2
 import paypalrestsdk
-import requests
 
 class PaypalConfig:
     paypalrestsdk.configure({
@@ -27,8 +25,8 @@ class PaypalConfig:
                 "description": "Payment description"
             }],
             "redirect_urls": {
-                "return_url": "http://yourapp.com/execute-payment",
-                "cancel_url": "http://yourapp.com/cancel"
+                "return_url": "http://xxx-xxx-xxx.com/execute-payment",
+                "cancel_url": "http://xxx-xxx-xxx.com/cancel"
             }
         })
 
