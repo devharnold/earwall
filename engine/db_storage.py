@@ -112,7 +112,8 @@ with app.app_context():
 
     create_accounts_table_query = """
     CREATE TABLE IF NOT EXISTS accounts (
-        account_id SERIAL PRIMARY KEY,
+        account_id VARCHAR(10) PRIMARY KEY CHECK (LENGTH(account_id) = 10 AND account_id ~ '^[0-9]+$'),
+        account_number VARCHAR(13) UNIQUE CHECK (LENGTH(account_number) = 13 AND account_number ~ '^[0-9]+$'),
         user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
         account type VARCHAR(50) NOT NULL,
         balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
