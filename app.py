@@ -4,7 +4,6 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 from engine.db_storage import get_db_connection
-from api import ...
 
 load_dotenv()
 DB_NAME = os.getenv('DB_NAME')

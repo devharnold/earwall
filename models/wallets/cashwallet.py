@@ -88,93 +88,18 @@ class CashWallet:
             cursor.close()
             connection.close()
 
-    @classmethod
-    def delete_wallet(cls, user_id: int, wallet_id: int, balance: int):
-        try:
-            connection = psycopg2.connect(
-                name=DB_NAME,
-                host=DB_HOST,
-                port=DB_PORT,
-                user=DB_USER,
-                password=DB_PASSWORD
-            )
-            cursor = connection.cursor()
-
-            connection.autocommit = False
-
-            cursor.execute("SELECT balance FROM cash_wallet WHERE wallet_id = %s", (wallet_id))
-            result = cursor.fetchone()
-
-            if not result:
-                return jsonify({"error": "Wallet not found"}), 404
-            
-            balance, wallet_type = result
-            #if wallet_type != "Premium":
-            #    return jsonify({"error": "Only premium wallets can be deleted"}), 403
-            
-            if balance > 0 or balance < 0:
-                return jsonify({"error": "Cannot delete a wallet with a non-zero balance"})
-
-            cursor.execute("DELETE FROM spend_history WHERE wallet_id = %s", (wallet_id))
-
-            cursor.execute("DELETE FROM cash_wallet WHERE wallet_id = %s", (wallet_id))
-            connection.commit()
-
-            return jsonify({"message": "Premium wallet successfully deleted!"}), 200
-        
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-        finally:
-            cursor.close()
-            connection.close()
-
-    @classmethod
-    def deactivate_wallet(cls, user_email: str, wallet_id: int, expiration_days: int, datetime):
-        try:
-            connection = psycopg2.connect(
-                name=DB_NAME,
-                user=DB_USER,
-                port=DB_PORT,
-                host=DB_HOST,
-                password=DB_PASSWORD
-            )
-            cursor = connection.cursor()
-
-            connection.autocommit = False
-            deactivation_time = datetime.now()
-
-            cursor.execute("""
-                UPDATE cash_wallet
-                SET status = 'inactive', deactivated_at = %s, expiration_days = %s
-                WHERE wallet_id = %s
-                """,
-                (deactivation_time, expiration_days, wallet_id)
-            )
-            connection.commit()
-
-            cls.producer.send(cls.kafka_topic, {
-                "user_email": user_email,
-                "expiration_days": expiration_days
-            })
-
-            return jsonify({"message": "Account successfully deactivated"}), 200
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-        finally:
-            cursor.close()
-            connection.close()
-
-    def send_email_notification(user_email, expiration_days):
+    def send_email_notification(user_email, created_wallet):
         """Sends an email to the user to alert the user
-        who deactivated a wallet to check on the expiration days
+        a wallet has been created and is linked to the user's
+        account.
         """
         sender_email = "your_email@example.com"
         sender_password = "your_email_password"
-        subject = "Your wallet has been deactivated!"
+        subject = "You have created your wallet! Yaaaay!!!"
         body = f"""
         Dear User,
         
-        Your wallet has been successfully deactivated! It will be permanently deleted after {expiration_days} unless reactivated.
+        You have successfully created a new wallet, linked to your account. You can now send and receive funds through your wallet.
         
         Thank you,
         H arnold & nerd Service Team.
@@ -205,7 +130,7 @@ class CashWallet:
 
         for message in consumer:
             user_email = message.value.get("user_email")
-            expiration_days = message.value.get("expiration_days")
+            created_wallet = message.value.get("expiration_days")
 
             #send the email notification
-            send_email_notification(user_email, expiration_days)
+            send_email_notification(user_email, created_wallet)
