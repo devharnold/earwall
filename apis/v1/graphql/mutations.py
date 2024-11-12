@@ -7,6 +7,7 @@ from models.wallets.cashwallet import CashWallet
 from engine.db_storage import get_db_connection
 import random
 
+
 class CreateAccount(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)
@@ -14,7 +15,7 @@ class CreateAccount(graphene.Mutation):
 
     account = graphene.Field(AccountType)
 
-    def mutate(self, intro, user_id, initial_balance):
+    def mutate(self, info, user_id, initial_balance):
         conn = get_db_connection()
         cursor = conn.cursor()
 
