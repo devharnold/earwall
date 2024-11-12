@@ -1,19 +1,59 @@
 # graphql mutations
 
 import graphene
-from .types import AccountType, CashWalletType
-from models.account import Account
-from models.wallets.cashwallet import CashWallet
+from .types import UserType, AccountType, CashWalletType
+from graphene import String, Int, Field
 from engine.db_storage import get_db_connection
 import random
 
+class CreateUser(graphene.ObjectType):
+    class Arguments:
+        first_name = String(required=True)
+        last_name = String(required=True)
+        user_email = String(required=True)
+        phone_number = Int(required=True)
+        password = String(required=True)
 
+    user = Field(lambda: UserType)
+
+    def mutate(self, info, user_id):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        user_id = self.generate_user_id(cursor)
+
+        insert_query = """
+            INSERT INTO users (user_id, first_name, last_name, user_email, phone_number, password)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING user_id, first_name, last_name, user_email, phone_number;
+        """
+        cursor.execute(insert_query, (user_id))
+        new_user = cursor.fetchone()
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return CreateUser(user=new_user)
+
+
+    @staticmethod
+    def generate_user_id(cursor):
+        """Generate a random user id"""
+        while True:
+            user_id = ''.join(str(random.randint(0, 9)) for _ in range(10))
+
+            cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
+            existing_id = cursor.fetchone()
+
+            if not existing_id:
+                return user_id
 class CreateAccount(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)
         initial_balance = graphene.Decimal(default_value=0.00) # Default value set to 0.00
 
-    account = graphene.Field(AccountType)
+    account = Field(lambda: AccountType)
 
     def mutate(self, info, user_id, initial_balance):
         conn = get_db_connection()
@@ -72,7 +112,7 @@ class CreateCashWallet(graphene.Mutation):
         user_id = graphene.Int(required=True)
         initial_balance = graphene.Decimal(default_value=0.00)
 
-    cashwallet = graphene.Field(CashWalletType)
+    cashwallet = Field(lambda: CashWalletType)
 
     def mutate(self, info, user_id, initial_balance):
         conn = get_db_connection()
