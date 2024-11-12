@@ -43,6 +43,7 @@ with app.app_context():
         first_name VARCHAR(50) NOT NULL,
         last_name VARCHAR(50) NOT NULL,
         user_email VARCHAR(100) UNIQUE NOT NULL,
+        phone_number INT(10) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         account_number  VARCHAR(14) UNIQUE,
         currency VARCHAR(50),
