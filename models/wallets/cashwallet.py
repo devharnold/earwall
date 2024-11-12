@@ -120,17 +120,17 @@ class CashWallet:
         except Exception as e:
             print(f"Failed to send email: {e}")
 
-    #def consume_notifications():
-    #    """Kafka activities happening over here"""
-    #    consumer = KafkaConsumer(
-    #        'deactivation-notifications',
-    #        bootstrap_servers=['localhost:9092'],
-    #        value_deserializer=lambda m: json.loads(m.decode('utf-8'))
-    #    )
-#
-    #    for message in consumer:
-    #        user_email = message.value.get("user_email")
-    #        created_wallet = message.value.get("expiration_days")
-#
-    #        #send the email notification
-    #        send_email_notification(user_email, created_wallet)
+    def consume_notifications():
+        """Kafka activities happening over here"""
+        consumer = KafkaConsumer(
+            'deactivation-notifications',
+            bootstrap_servers=['localhost:9092'],
+            value_deserializer=lambda m: json.loads(m.decode('utf-8'))
+        )
+
+        for message in consumer:
+            user_email = message.value.get("user_email")
+            created_wallet = message.value.get("expiration_days")
+
+            #send the email notification
+            send_email_notification(user_email, created_wallet)
