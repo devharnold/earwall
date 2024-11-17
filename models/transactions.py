@@ -150,7 +150,7 @@ class Transaction(CashWallet):
                 """
                 INSERT INTO transactions (account_id, wallet_id, amount, transaction_type, status)
                 VALUES (%s, %s, %s, %s, %s)
-                """, (account_id, wallet_id, amount, transaction_type, 'Completed')
+                """, (account_id, wallet_id, amount, 'Completed')
             )
             connection.commit()
             print("Withdrawal successful.")
