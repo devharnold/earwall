@@ -25,8 +25,8 @@ class PaypalConfig:
                 "description": "Payment description"
             }],
             "redirect_urls": {
-                "return_url": "http://xxx-xxx-xxx.com/execute-payment",
-                "cancel_url": "http://xxx-xxx-xxx.com/cancel"
+                "return_url": "http://localhost:3000/execute-payment",
+                "cancel_url": "http://localhost:3000/cancel"
             }
         })
 

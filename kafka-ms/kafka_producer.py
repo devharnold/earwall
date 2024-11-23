@@ -1,5 +1,6 @@
 from kafka import KafkaProducer
 import json
+from models.user import ValidatePaypalId
 
 class KafkaProducerInstance:
     """
@@ -14,6 +15,7 @@ class KafkaProducerInstance:
             "p2p_transfer": "p2p_transfer_notifications",
             "withdraw": "withdraw_from_account_notifications",
             "deposit": "deposit_notifications",
+            "paypal_config": "paypal_config_notification",
             "transfer_to_paypal": "transfer_to_paypal_notifications",
             "transfer_from_paypal": "transfer_from_paypal_notifications"
         }
