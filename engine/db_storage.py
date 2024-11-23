@@ -137,6 +137,7 @@ with app.app_context():
     CREATE TABLE IF NOT EXISTS transactions (
         transaction_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        wallet_id INTEGER REFERENCES cash_wallets(id) ON DELETE CASCADE,
         transaction type VARCHAR(50) NOT NULL,
         amount DECIMAL(20, 2) NOT NULL,
         status VARCHAR(20) DEFAULT 'pending',
@@ -145,7 +146,7 @@ with app.app_context():
         source_account_id INT REFERENCES accounts(account_id) ON DELETE SET NULL,
         destination_account_id INT REFERENCES accounts(account)id ON DELETE SET NULL,
         source_cashwallet_id INT REFERENCES cashwallets(cashwallet_id) ON DELETE SET NULL,
-        destination_cashwallet_id INT REFERENCES cashwallets(cashwallet_id) ON DELETE SET NULL
+        destination_cashwallet_id INT REFERENCES cashwallets(cashwallet_id) ON DELETE SET NULL,
         description TEXT
     );
     """
