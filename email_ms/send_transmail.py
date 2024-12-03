@@ -34,7 +34,7 @@ class EmailTransactionService:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_password)
                 server.sendmail(self.smtp_user, to_email, msg.as_string())
-            print(f"Email successfully send to {to_email}")
+            print(f"Email successfully sent to {to_email}")
         except Exception as e:
             print(f"Failed to send email to {to_email}: e")
             raise
@@ -74,15 +74,15 @@ class EmailTransactionService:
             subject="Payment Successful"
             message_body=(
                 f"Dear Client \n\n"
-                f"Your payment of {amount} to {first_name, last_name} has successfully been transacted."
+                f"Your payment of {amount} to {first_name, last_name} has successfully been transacted.\n"
                 f"Receipt Details: \n"
                 f" - Amount: {amount}\n"
                 f" - Transaction ID: {transaction_id}\n\n"
                 f"Thank you for using our services \n\n"
-                F"Best Regards,\n"
+                f"Best Regards,\n"
                 f"Tarantula Team."
             )
-            sender_email.send_email(sender_email, to_email, message_body)
+            sender_email.send_email(to_email, subject, message_body)
 
         except Exception as e:
             conn.rollback()
@@ -129,3 +129,36 @@ class EmailTransactionService:
         finally:
             conn.close()
             cursor.close()
+
+    def send_mpesa_app(sender_email, to_email, user_id, amount, transaction_id, wallet_id):
+        """Sends email notification to the user after funds transfer from Mpesa to the app"""
+        try:
+            conn=get_db_connection()
+            cursor=conn.cursor()
+
+            cursor.execute(
+                "SELECT user_id FROM cash_wallets WHERE wallet_id=%s" (user_id, wallet_id)
+            )
+            user_id=cursor.fetchone()
+            conn.commit()
+
+            cursor.execute(
+                "SELECT amount FROM transactions WHERE transaction_id=%s" (amount, transaction_id)
+            )
+            transaction_id=cursor.fetchone()
+            conn.commit()
+
+            subject="Transaction Alert!"
+            message_body=(
+                f"Dear Client,\n"
+                f"{amount} has been credited to your wallet {wallet_id} from mpesa\n\n"
+                f"Tarantula Team."
+            )
+            sender_email.send_email(to_email, subject, message_body)
+
+        except Exception as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 500
+        finally:
+            cursor.close()
+            conn.close()

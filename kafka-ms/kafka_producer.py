@@ -1,19 +1,19 @@
 from kafka import KafkaProducer
 import json
-from models.user import ValidatePaypalId
 
 class KafkaProducerInstance:
     """
     Handles all kafka producer operations
     """
-    def __init__(self, kafka_topic):
+    def __init__(self, kafka_topics):
         self.producer = KafkaProducer(
             bootstrap_servers=['localhost:9092'],
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
         self.kafka_topics = {
-            "p2p_transfer": "p2p_transfer_notifications",
-            "withdraw": "withdraw_from_account_notifications",
+            #label: topic --> Key, value pair.
+            "p2p_transfer": "wallet_transactions_notifications",
+            "withdraw": "withdraw_from_cash_wallet_notifications",
             "deposit": "deposit_notifications",
             "paypal_config": "paypal_config_notification",
             "transfer_to_paypal": "transfer_to_paypal_notifications",
@@ -31,4 +31,4 @@ class KafkaProducerInstance:
             except Exception as e:
                 print(f"Error sending to Kafka topic '{topic}': {e}")
         else:
-            print(f"nvalid transaction type: {transaction_type}")
+            print(f"Invalid transaction type: {transaction_type}")

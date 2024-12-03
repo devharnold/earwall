@@ -31,5 +31,38 @@ class RegularEmailService:
         msg.attach(MIMEText(messsage_body, "plain"))
 
         try:
-            with smtplib.SMTP(self.smtp_host, )
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.smtp_user, self.smtp_password)
+                server.sendmail(self.smtp_user, to_email, msg.as_string())
+            print(f"Email successfully sent to {to_email}")
+        except Exception as e:
+            print(f"Failed to send email to {to_email}: e")
+            raise
 
+    def send_welcome_mail(sender_email, user_id, to_email):
+        """Sends a Welcome mail to the user after signing up for our platform"""
+        try:
+            conn=get_db_connection()
+            cursor=conn.cursor()
+            cursor.execute(
+                "SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id)
+            )
+            user_id=cursor.fetchone()[0]
+            conn.commit()
+
+            subject="Welcome Aboard!"
+            message_body=(
+                f"Dear Client \n\n"
+                f"You have successfully signed up for Tarantula. Enjoy your experience with our service\n\n"
+                f"Best Regards,\n"
+                f"Tarantula Team."
+            )
+            sender_email.send_email(to_email, subject, message_body)
+            
+        except Exception as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 500
+        finally:
+            cursor.close()
+            conn.close()

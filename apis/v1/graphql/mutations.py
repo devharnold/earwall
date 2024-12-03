@@ -121,7 +121,7 @@ class CreateCashWallet(graphene.Mutation):
         cashwallet_id = self.generate_cashwallet_id(cursor)
 
         insert_query = """
-            INSERT INTO cashwallet (cashwallet_id, user_id, balance, created_at)
+            INSERT INTO cashwallets (cashwallet_id, user_id, balance, created_at)
             VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
             RETURNING cashwallet_id, user_id, balance;
         """
@@ -141,7 +141,7 @@ class CreateCashWallet(graphene.Mutation):
             cashwallet_id = ''.join(str(random.randint(0, 9)) for _ in range(10))
 
             #check if the wallet_id exists
-            cursor.execute("SELECT cashwallet_id FROM cashwallet WHERE cashwallet_id = %s", (cashwallet_id))
+            cursor.execute("SELECT cashwallet_id FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id))
             existing_id = cursor.fetchone()
 
             if not existing_id:
