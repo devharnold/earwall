@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+"""Kafka producer class"""
+
 from kafka import KafkaProducer
 import json
 
@@ -5,14 +8,14 @@ class KafkaProducerInstance:
     """
     Handles all kafka producer operations
     """
-    def __init__(self, kafka_topics):
+    def __init__(self, topics):
         self.producer = KafkaProducer(
             bootstrap_servers=['localhost:9092'],
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
         )
-        self.kafka_topics = {
+        self.topics = {
             #label: topic --> Key, value pair.
-            "p2p_transfer": "wallet_transactions_notifications",
+            "p2p_transaction": "wallet_transactions_notifications",
             "withdraw": "withdraw_from_cash_wallet_notifications",
             "deposit": "deposit_notifications",
             "paypal_config": "paypal_config_notification",

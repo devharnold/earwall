@@ -11,18 +11,9 @@ import random
 from os import getenv
 from models import BaseModel
 from engine.db_storage import get_db_connection
-from web3 import HTTPProvider
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import request, jsonify
-import paypalrestsdk
-from dotenv import load_dotenv
-load_dotenv()
 
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PORT = os.getenv('DB_PORT')
-DB_HOST = os.getenv('DB_HOST')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 class Account(BaseModel):
     """Representation of an account model"""
@@ -58,14 +49,8 @@ class Account(BaseModel):
         initial_balance = 0
 
         try:
-            connection = psycopg2.connect(
-                name=DB_NAME,
-                port=DB_PORT,
-                user=DB_USER,
-                host=DB_HOST,
-                password=DB_PASSWORD,
-            )
-            cursor = connection.cursor()
+            conn=get_db_connection()
+            cursor=conn.cursor()
 
             insert_query = """
             INSERT INTO users (username, email, password, account_type, balance)
@@ -73,10 +58,11 @@ class Account(BaseModel):
             """
             cursor.execute(insert_query, (username, email, hashed_password, account_type, intial_balance, currency))
 
-            connection.commit()
+            conn.commit()
             return jsonify({"message": "Account successfully created"}), 201
         except Exception as e:
+            conn.rollback() #after an unsuccessful connection attempt
             return jsonify({"error": str(e)}), 500
         finally:
             cursor.close()
-            connection.close()
+            conn.close()

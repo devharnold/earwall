@@ -68,7 +68,7 @@ class EmailTransactionService:
             conn.commit()
 
             cursor.execute(
-                "SELECT transaction_id FROM transactions WHERE wallet_id=%s", (cashwallet_id, transaction_id)
+                "SELECT transaction_id FROM transactions WHERE cashwallet_id=%s", (cashwallet_id, transaction_id)
             )
 
             subject="Payment Successful"

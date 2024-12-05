@@ -3,8 +3,8 @@
 import pytest
 import psycopg2
 import engine
-from engine.db_storage import get_db_connection
 import engine.db_storage
+from engine.db_storage import get_db_connection
 from models.baseModel import BaseModel
 from models.user import User
 import pep8
@@ -68,5 +68,3 @@ class TestUser:
             self.assertEqual(user.password, None)
         else:
             self.assertEqual(user.password, "")
-
-    def test_has
