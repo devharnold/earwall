@@ -1,8 +1,8 @@
 from flask import Flask
 import os
 import psycopg2
-from dotenv import load_dotenv
 import dotenv
+from dotenv import load_dotenv
 from web3 import HTTPProvider
 
 
@@ -137,7 +137,8 @@ with app.app_context():
     CREATE TABLE IF NOT EXISTS transactions (
         transaction_id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        wallet_id INTEGER REFERENCES cash_wallets(id) ON DELETE CASCADE,
+        sender_wallet_id INTEGER REFERENCES cash_wallets(id) ON DELETE CASCADE,
+        receiver_wallet_id INTEGER REFERENCES cash_wallets(id) ON DELETE CASCADE,
         transaction type VARCHAR(50) NOT NULL,
         amount DECIMAL(20, 2) NOT NULL,
         status VARCHAR(20) DEFAULT 'pending',

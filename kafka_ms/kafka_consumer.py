@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+"""Multi-threaded kafka consumer function."""
 from kafka import KafkaConsumer
 import json
 import threading
