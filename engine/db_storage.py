@@ -91,9 +91,10 @@ with app.app_context():
 
     create_cashwallet_table_query = """
     CREATE TABLE IF NOT EXISTS cashwallets (
-        cashwallet_id SERIAL PRIMARY KEY,
+        cashwallet_id INTEGER(9) SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES user(id) ON DELETE CASCADE,
         balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
+        currency VARCHAR(3) DEFAULT 'USD',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """
@@ -135,8 +136,9 @@ with app.app_context():
 
     create_transactions_table_query = """
     CREATE TABLE IF NOT EXISTS transactions (
-        transaction_id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        transaction_id VARCHAR(11) SERIAL PRIMARY KEY,
+        sender_user_id INTEGER NOT REFERENCES users(id) ON DELETE CASCADE,
+        receiver_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         sender_wallet_id INTEGER REFERENCES cash_wallets(id) ON DELETE CASCADE,
         receiver_wallet_id INTEGER REFERENCES cash_wallets(id) ON DELETE CASCADE,
         transaction type VARCHAR(50) NOT NULL,
