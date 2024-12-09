@@ -1,12 +1,9 @@
 # Controls graphql queries
 
 import graphene
-from .types import UserType, AccountType, CashWalletType
+from .types import UserType, AccountType, CashWalletType, TransactionType
 from flask import jsonify
-from models.user import User
-from models.account import Account
 from engine.db_storage import get_db_connection
-from models.wallets.cashwallet import CashWallet
 
 class Query(graphene.ObjectType):
     user = graphene.Field(UserType, id=graphene.Int(required=True))
@@ -18,7 +15,7 @@ class Query(graphene.ObjectType):
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            cursor.execute("SELECT id, name, email FROM users;")
+            cursor.execute("SELECT user_id, first_name, last_name, user_email FROM users;")
             users = cursor.fetchall()
             cursor.close()
             conn.close()
@@ -44,7 +41,7 @@ class Query(graphene.ObjectType):
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            cursor.execute("SELECT wallet_id, user_id, balance FROM cashwallet;")
+            cursor.execute("SELECT cashwallet_id, user_id, balance FROM cashwallet;")
             cashwallets = cursor.fetchall()
             cursor.close()
             conn.close()
@@ -52,9 +49,15 @@ class Query(graphene.ObjectType):
             return jsonify({"Error": "Cannot get wallets"})
         return [CashWalletType(cashwallet_id=row[0], user_id=row[1], balance=row[2]) for row in cashwallets]
     
-    #
-    #def resolve_account(self, info, user_id):
-    #    return Account.get_account_by_user_id(user_id)
-    #
-    #def resolve_cashwallet(self, info, user_id):
-    #    return CashWallet.get_cashwallet_by_user_id(user_id)
+    def resolve_transaction(self, transaction_id):
+        try:
+            conn=get_db_connection()
+            cursor=conn.cursor()
+
+            cursor.execute("SELECT transaction_id, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, amount FROM transactions;")
+            transactions = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            return jsonify({"Error": "Cannot get transactions"})
+        return [TransactionType(transaction_id=row[0], user_id=row[1], amount=row[2]) for row in transactions]

@@ -20,3 +20,10 @@ class CashWalletType(object.ObjectType):
     user_id = graphene.Int()
     account_id = graphene.Int()
     balance = graphene.Decimal()
+
+class TransactionType(object.ObjectType):
+    transaction_id = graphene.Int()
+    user_id = graphene.Int()
+    cashwallet_id = graphene.Int()
+    amount = graphene.Float()
+    balance = graphene.Float()
