@@ -8,19 +8,19 @@ from models.account import Account
 from models.baseModel import BaseModel
 from models.user import User
 from flask import jsonify, request
+import uuid
 from datetime import datetime, timedelta, timezone
 from werkzeug.security import generate_password_hash
 from engine.db_storage import get_db_connection
 
 
 class CashWallet(BaseModel):
-    def __init__(self, cashwallet_id, user_id, username, user_email, balance, currency, password):
-        self.cashwallet_id = cashwallet_id
+    def __init__(self, cashwallet_id, user_id, user_email, balance, currency, password):
+        self.cashwallet_id = str(uuid.uuid4())[:8]
         self.user_id = user_id
         self.password = password
         self.balance = balance
         self.currency = currency
-        self.username = username
         self.user_email = user_email
     
 

@@ -14,40 +14,22 @@ class CreateUser(graphene.ObjectType):
         phone_number = Int(required=True)
         password = String(required=True)
 
-    user = Field(lambda: UserType)
+    user = graphene.Field(lambda: UserType)
 
-    def mutate(self, info, user_id):
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    def mutate(self, info, first_name, last_name, user_email, phone_number, password, user_id):
+        new_user = {
+            "user_id": user_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "user_email": user_email,
+            "phone_number": phone_number,
+            "password": password
+        }
+        return CreateUser(new_user)
+    
+class Mutation(graphene.ObjectType):
+    create_user = CreateUser.Field()
 
-        user_id = self.generate_user_id(cursor)
-
-        insert_query = """
-            INSERT INTO users (user_id, first_name, last_name, user_email, phone_number, password)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING user_id, first_name, last_name, user_email, phone_number;
-        """
-        cursor.execute(insert_query, (user_id))
-        new_user = cursor.fetchone()
-
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        return CreateUser(user=new_user)
-
-
-    @staticmethod
-    def generate_user_id(cursor):
-        """Generate a random user id"""
-        while True:
-            user_id = ''.join(str(random.randint(0, 9)) for _ in range(10))
-
-            cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
-            existing_id = cursor.fetchone()
-
-            if not existing_id:
-                return user_id
 class CreateAccount(graphene.Mutation):
     class Arguments:
         user_id = graphene.Int(required=True)

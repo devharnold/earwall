@@ -28,38 +28,58 @@ class TestTransaction:
         """Tests that the transaction class is a subclass of the basemodel"""
         trans = Transaction()
         assert isinstance(trans, BaseModel)
-        assert True(hasattr(trans, "id"))
+        assert True(hasattr(trans, "transaction_id"))
+        assert True(hasattr(trans, "sender_user_email"))
+        assert True(hasattr(trans, "receiver_user_email"))
+        assert True(hasattr(trans, "sender_user_id"))
+        assert True(hasattr(trans, "receiver_user_id"))
+        assert True(hasattr(trans, "sender_cw_id"))
+        assert True(hasattr(trans, "receiver_cw_id"))
+        assert True(hasattr(trans, "amount"))
+        assert True(hasattr(trans, "sender_currency"))
+        assert True(hasattr(trans, "receiver_currency"))
         assert True(hasattr(trans, "created_at"))
 
-    def test_has_user_email_attr(self):
-        """Tests that transaction model has user_email attribute"""
-        trans = Transaction()
-        assert True(hasattr(trans, "user_email"))
-        if engine.db_storage == 'db':
-            self.assertEqual(trans.user_email, None)
-        else:
-            self.assertEqual(trans.user_id, "")
+    def test_has_attr(self):
+        """Tests that the transaction model has the user_email attr"""
+        trans = Transaction(
+            sender_user_email="john.doe@example.com",
+            receiver_user_email="doe.john@example.com",
+            sender_user_id="12345678",
+            receiver_user_id="87654321",
+            sender_cw_id="23232",
+            receiver_cw_id="45772",
+            amount=554.00,
+            sender_currency="GBP",
+            receiver_currency="USD",
+            transaction_id="453223"
+        )
+        assert (hasattr(trans, "sender_user_email"))
+        assert trans.sender_user_email == "john.doe@example.com"
 
-    def test_has_sender_wallet_id_attr(self):
-        """Tests that transaction class has sender_wallet_id attribute"""
-        trans = Transaction()
-        assert True(hasattr(trans, ))
+        assert (hasattr(trans, "receiver_user_email"))
+        assert trans.receiver_user_email == "doe.john@example.com"
 
+        assert (hasattr(trans, "sender_user_id"))
+        assert trans.sender_user_id == "12345678"
 
-    def test_has_amount_attr(self):
-        """Tests that transaction class has amount attribute"""
-        trans = Transaction()
-        assert True(hasattr(trans, "amount"))
-        if engine.db_storage == 'db':
-            self.assertEqual(trans.amount, None)
-        else:
-            self.assertEqual(trans.amount, "")
+        assert (hasattr(trans, "receiver_user_id"))
+        assert trans.receiver_user_id == "87654321"
 
-    def test_has_transaction_id_attr(self):
-        """Tests that transaction class has transaction_id attribute"""
-        trans = Transaction()
-        assert True(hasattr(trans, "transaction_id"))
-        if engine.db_storage == 'db':
-            self.assertEqual(trans.transaction_id, None)
-        else:
-            self.assertEqual(trans.transaction_id, "")
+        assert (hasattr(trans, "sender_cw_id"))
+        assert trans.sender_cw_id == "23232"
+
+        assert (hasattr(trans, "receiver_cw_id"))
+        assert trans.receiver_cw_id == "45772"
+
+        assert (hasattr(trans, "amount"))
+        assert trans.amount == 554.00
+
+        assert (hasattr(trans, "sender_currency"))
+        assert trans.sender_currency == "GBP"
+
+        assert (hasattr(trans, "receiver_currency"))
+        assert trans.receiver_currency == "USD"
+
+        assert (hasattr(trans, "transaction_id"))
+        assert trans.transaction_id == "453223"
