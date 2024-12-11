@@ -21,17 +21,17 @@ def startApp():
 @app.route('/')
 def home():
     #connecting to our db
-    conn = get_db_connection()
-    cur = conn.cursor()
+    connection = get_db_connection()
+    cursor = connection.cursor()
 
     #execute a raw sql query
-    cur.execute('SELECT version();')
+    cursor.execute('SELECT version();')
 
-    db_version = cur.fetchone()
+    db_version = cursor.fetchone()
 
     #close the connection
-    cur.close()
-    conn.close()
+    cursor.close()
+    connection.close()
 
     return jsonify({'PostgreSQL version': db_version})
 

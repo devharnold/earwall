@@ -2,9 +2,6 @@
 #test cash_wallet file
 
 import pytest
-import engine
-import engine.db_storage
-from engine.db_storage import get_db_connection
 from models.baseModel import BaseModel
 from models.wallets.cashwallet import CashWallet
 import pep8
@@ -35,46 +32,23 @@ class TestCashWallet:
 
     def test_has_user_id_attr(self):
         """tests that the cash wallet model has user id attribute"""
-        cash_wallet = CashWallet()
-        assert True(hasattr(cash_wallet, "user_id"))
-        if engine.db_storage == 'db':
-            self.assertEqual(cash_wallet.user_id, None)
-        else:
-            self.assertEqual(cash_wallet.user_id, "")
+        cash_wallet = CashWallet(
+            cashwallet_id="12345678",
+            user_email="john.doe@example.com",
+            user_id="34wses43",
+            password="securepass",
+            balance=0.00,
+            currency="USD",
+        )
 
-    def test_has_balance_attr(self):
-        """tests that the cash wallet model has balance attribute"""
-        cash_wallet = CashWallet()
-        assert True(hasattr(cash_wallet, "balance"))
-        if engine.db_storage == 'db':
-            self.assertEqual(cash_wallet.balance, None)
-        else:
-            self.assertEqual(cash_wallet.balance, 0)
+        assert (hasattr(cash_wallet, "cashwallet_id"))
+        assert len(cash_wallet.cashwallet_id) == 8
 
+        assert (hasattr(cash_wallet, "user_id"))
+        assert len(cash_wallet.user_id) == 8
 
-    def test_has_cashwallet_id_attr(self):
-        """tests that the cash wallet model has the cashwallet_id attribute"""
-        cash_wallet = CashWallet()
-        assert True(hasattr(cash_wallet, "cashwallet_id"))
-        if engine.db_storage == 'db':
-            self.assertEqual(cash_wallet.cashwallet_id, None)
-        else:
-            self.assertEqual(cash_wallet.cashwallet_id, "")
+        assert (hasattr(cash_wallet, "user_email"))
+        assert cash_wallet.password == "securepass"
 
-    def test_has_currency_attr(self):
-        """tests that the cashwallet has currecny attribute"""
-        cash_wallet = CashWallet()
-        assert True(hasattr(cash_wallet, "currency"))
-        if engine.db_storage == 'db':
-            self.assertEqual(cash_wallet.currency, None)
-        else:
-            self.assertEqual(cash_wallet.currency, "")
-
-    def test_has_password_attr(self):
-        """tests that the cashwallet has password attr"""
-        cash_wallet = CashWallet()
-        assert True(hasattr(cash_wallet, "password"))
-        if engine.db_storage == 'db':
-            self.assertEqual(cash_wallet.password, None)
-        else:
-            self.assertEqual(cash_wallet.password, "")
+        assert (hasattr(cash_wallet, "balance"))
+        assert cash_wallet.balance == 0.00
