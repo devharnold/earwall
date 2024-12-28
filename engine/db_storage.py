@@ -68,7 +68,7 @@ def create_business_account_table():
             cursor = connection.cursor()
             create_query = """
                 CREATE TABLE IF NOT EXISTS business_account (
-                    id SERIAL PRIMARY KEY,
+                    bizacc_id SERIAL PRIMARY KEY,
                     business_name VARCHAR(100) NOT NULL,
                     account_balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -92,7 +92,7 @@ def create_cashwallet_table():
             cursor = connection.cursor()
             create_query = """
                 CREATE TABLE IF NOT EXISTS cashwallets (
-                    id SERIAL PRIMARY KEY,
+                    cw_id SERIAL PRIMARY KEY,
                     user_id REFERENCES users(id) ON DELETE CASCADE,
                     user_email STRING REFERENCES users(user_email) ON DELETE CASCADE,
                     balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
@@ -125,7 +125,6 @@ def create_transactions_table():
                     receiver_wallet_id INTEGER REFERENCES cashwallets(cashwallet_id) ON DELETE CASCADE,
                     transaction_type VARCHAR(50) NOT NULL,
                     amount DECIMAL(20, 2) NOT NULL,
-                    status VARCHAR(20) DEFAULT 'pending',
                     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     source_account_id VARCHAR(10) REFERENCES accounts(account_id) ON DELETE SET NULL,
                     destination_account_id VARCHAR(10) REFERENCES accounts(account_id) ON DELETE SET NULL,

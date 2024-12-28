@@ -25,8 +25,8 @@ class CreateTransaction(graphene.Mutation):
         transaction_id = self.generate_transaction_id(cursor)
 
         insert_query = """
-            INSERT INTO transactions (sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id)"""
-        cursor.execute(insert_query, (sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id))
+            INSERT INTO transactions (sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount)"""
+        cursor.execute(insert_query, (sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount))
         new_transaction = cursor.fetchone()
 
         connection.commit()
