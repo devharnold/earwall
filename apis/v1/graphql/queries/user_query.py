@@ -2,7 +2,7 @@
 
 import graphene
 from graphql import GraphQLError
-import psycopg2
+from engine.db_storage import get_db_connection
 from apis.v1.graphql.types import UserType
 import os
 from dotenv import load_dotenv
@@ -13,13 +13,7 @@ class Query(graphene.ObjectType):
 
     def resolve_user(self, info, user_id):
         try:
-            connection = psycopg2.connect(
-                host=os.getenv('DB_HOST'),
-                port=os.getenv('DB_PORT'),
-                dbname=os.getnev('DB_NAME'),
-                user=os.getenv('DB_NAME'),
-                password=os.getenv('DB_PASSWORD')
-            )
+            connection = get_db_connection()
             cursor = connection.cursor()
 
             cursor.execute(

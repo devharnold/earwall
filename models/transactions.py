@@ -27,7 +27,7 @@ class Transaction(BaseModel):
         self.transaction_id = str(uuid.uuid4())
 
     @classmethod
-    def process_p2p_transaction(cls, sender_user_id, receiver_user_id, amount, sender_cashwallet_id, receiver_cashwallet_id, from_currency, to_currency):
+    def process_p2p_transaction(cls, cashwallet_id, sender_user_id, receiver_user_id, amount, sender_cashwallet_id, receiver_cashwallet_id, from_currency, to_currency):
         """Initiates a transaction between two users in a P2P EFT service with currency conversion."""
         available_currencies = ["GBP", "USD", "KES"]
         try:
@@ -43,7 +43,7 @@ class Transaction(BaseModel):
             conn.autocommit = False
 
             # Fetch sender wallet balance
-            cursor.execute("SELECT balance, currency FROM cashwallets WHERE cashwallet_id = %s", (sender_cashwallet_id,))
+            cursor.execute("SELECT balance, currency FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id,))
             sender_data = cursor.fetchone()
             if not sender_data:
                 return jsonify({"error": "Sender wallet not found."}), 404
