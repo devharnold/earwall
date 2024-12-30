@@ -9,7 +9,7 @@ import psycopg2
 import os
 import uuid
 from os import getenv
-from models.baseModel import BaseModel
+from models import BaseModel
 from engine.db_storage import get_db_connection
 from kafka import KafkaConsumer
 import paypalrestsdk
@@ -20,12 +20,11 @@ from web3 import HTTPProvider
 
 class User(BaseModel):
     """Representation of a user model"""
-    def __init__(self, user_id, first_name, last_name, user_email, phone_number, paypal_id, paypal_email, password=None):
+    def __init__(self, user_id, first_name, last_name, user_email, paypal_id, paypal_email, password=None):
         self.user_id = str(uuid.uuid4())[:8]
         self.first_name = first_name
         self.last_name = last_name
-        self.user_email = user_email
-        self.phone_number = phone_number
+        self.email = user_email
         self.password = password
         self.paypal_id = paypal_id
         self.paypal_email = paypal_email
@@ -37,18 +36,17 @@ class User(BaseModel):
         hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
         return salt, hashed_password
     
-    
     def save(self):
         """Saves a new user to the db"""
         connection = get_db_connection()
         cursor = connection.cursor()
 
         query = """
-        INSERT INTO users (user_id, first_name, last_name, phone_number, user_email, password)
-        VALUES (%s, %s, %s, %s, %s, %s);
+        INSERT INTO users (first_name, last_name, user_email, password)
+        VALUES (%s, %s, %s, %s);
         """
         try:
-            cursor.execute(query, (self.user_id, self.first_name, self.last_name, self.phone_number, self.user_email, self.password))
+            cursor.execute(query, (self.first_name, self.last_name, self.user_email, self.password))
             connection.commit()
             print("User saved successfully")
         except Exception as e:

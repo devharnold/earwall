@@ -27,63 +27,29 @@ class Transaction(BaseModel):
         self.transaction_id = str(uuid.uuid4())
 
     @classmethod
-    def process_p2p_transaction(cls, cashwallet_id, sender_user_id, receiver_user_id, amount, sender_cashwallet_id, receiver_cashwallet_id, from_currency, to_currency):
+    def process_p2p_transaction(cls, transaction):
         """Initiates a transaction between two users in a P2P EFT service with currency conversion."""
         available_currencies = ["GBP", "USD", "KES"]
+
         try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            connection.autocommit = False
 
-            if amount <= 0:
-                return jsonify({"error": "You cannot transact 0 funds"}), 400
+            result = []
+            for transaction in transaction:
+                sender_user_id = transaction['sender_user_id']
+                receiver_user_id = transaction['receiver_user_id']
+                from_currency = transaction['from_currency']
+                to_currency = transaction['to_currency']
+                sender_cashwallet_id = transaction['sender_cashwallet_id']
+                receiver_cashwallet_id = transaction['receiver_cashwallet_id']
+                amount = transaction['amount']
+                transaction_id = transaction['transaction_id']
 
-            if from_currency not in available_currencies or to_currency not in available_currencies:
-                return jsonify({"error": "Currency not available"}), 400
+                if amount <= 0:
+                    result.append({"transaction_id": transaction_id, "status": ""})
 
-            conn.autocommit = False
-
-            # Fetch sender wallet balance
-            cursor.execute("SELECT balance, currency FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id,))
-            sender_data = cursor.fetchone()
-            if not sender_data:
-                return jsonify({"error": "Sender wallet not found."}), 404
-
-            sender_balance, from_currency_db = sender_data
-            sender_balance = Decimal(sender_balance)
-
-            if sender_balance < amount:
-                return jsonify({"error": "Insufficient funds in your wallet!"}), 400
-
-            if from_currency != from_currency_db:
-                return jsonify({"error": "Sender currency mismatch!"}), 400
-
-            # Convert currency if needed
-            if from_currency != to_currency:
-                amount = cls.convert_currency(amount, from_currency, to_currency)
-
-            # Update balances
-            cursor.execute("UPDATE cashwallets SET balance = balance - %s WHERE cashwallet_id = %s", (amount, sender_cashwallet_id))
-            cursor.execute("UPDATE cashwallets SET balance = balance + %s WHERE cashwallet_id = %s", (amount, receiver_cashwallet_id))
-
-            # Log the transaction
-            cursor.execute(
-                """
-                INSERT INTO transactions (sender_user_id, receiver_user_id, sender_cashwallet_id, receiver_cashwallet_id, amount, transaction_type, transaction_id, from_currency, to_currency)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING transaction_id
-                """,
-                (sender_user_id, receiver_user_id, sender_cashwallet_id, receiver_cashwallet_id, amount, 'P2P Transfer', uuid.uuid4(), from_currency, to_currency)
-            )
-            transaction_id = cursor.fetchone()[0]
-            conn.commit()
-
-            return jsonify({"message": "Transaction completed successfully", "transaction_id": transaction_id}), 201
-
-        except Exception as e:
-            conn.rollback()
-            return jsonify({"error": str(e)}), 500
-        finally:
-            cursor.close()
-            conn.close()
 
     @classmethod
     def convert_currency(cls, amount: Decimal, from_currency: str, to_currency: str) -> Decimal:
