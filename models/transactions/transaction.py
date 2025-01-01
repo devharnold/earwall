@@ -12,8 +12,8 @@ import requests
 from decimal import Decimal
 from engine.db_storage import get_db_connection
 from dotenv import load_dotenv
-
 load_dotenv()
+
 
 class Transaction(BaseModel):
     """Transaction model"""
@@ -42,13 +42,52 @@ class Transaction(BaseModel):
                 receiver_user_id = transaction['receiver_user_id']
                 from_currency = transaction['from_currency']
                 to_currency = transaction['to_currency']
-                sender_cashwallet_id = transaction['sender_cashwallet_id']
-                receiver_cashwallet_id = transaction['receiver_cashwallet_id']
                 amount = transaction['amount']
                 transaction_id = transaction['transaction_id']
 
                 if amount <= 0:
-                    result.append({"transaction_id": transaction_id, "status": ""})
+                    result.append({"transaction_id": transaction_id, "status": "Incomplete! Cannot transfer 0 funds"})
+                    continue
+
+
+                if from_currency not in available_currencies or to_currency not in available_currencies:
+                    result.append({"transaction_id": transaction_id, "status": "Currency not available!"})
+                    continue
+
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_user_id))
+                sender_data = cursor.fetchone()
+                if not sender_data:
+                    result.append({"transaction_id": transaction_id, "status": "Sender wallet not found"})
+                    continue
+
+                sender_balance = sender_data[0]
+                if sender_balance < amount:
+                    result.append({"transaction_id": transaction_id, "status": "Insufficient funds in your wallet"})
+                    continue
+
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id))
+                receiver_data = cursor.fetchone()
+                if not receiver_data:
+                    result.append({"transaction_id": transaction_id, "status": "Receiver wallet not found!"})
+                    continue
+
+                cursor.execute(
+                    """
+                    INSERT INTO transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
+                )
+                result.append({"transaction_id": transaction_id, "status": "Transaction Complete"})
+
+            connection.commit()
+            return result
+        except Exception as e:
+            connection.rollback()
+            return {"error": "Transaction failed", "message": str(e)}, 500
+        finally:
+            connection.close()
+            cursor.close()
 
 
     @classmethod

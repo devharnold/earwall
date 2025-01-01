@@ -56,8 +56,6 @@ class BatchTransaction(BaseModel):
                 receiver_user_id = transaction['receiver_user_id']
                 from_currency = transaction['from_currency']
                 to_currency = transaction['to_currency']
-                sender_cashwallet_id = transaction['sender_cashwallet_id']
-                receiver_cashwallet_id = transaction['receiver_cashwallet_id']
                 amount = transaction['amount']
                 transaction_id = transaction['transaction_id']
 
@@ -69,7 +67,7 @@ class BatchTransaction(BaseModel):
                     results.append({"transaction_id": transaction_id, "status": "Currency not available"})
                     continue
 
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_cashwallet_id,))
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_user_id,))
                 sender_data = cursor.fetchone()
                 if not sender_data:
                     results.append({"transaction_id": transaction_id, "status": "Sender wallet not found"})
@@ -80,7 +78,7 @@ class BatchTransaction(BaseModel):
                     results.append({"transaction_id": transaction_id, "status": "Insufficient funds in your wallet"})
                     continue
 
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_cashwallet_id))
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id))
                 receiver_data = cursor.fetchone()
                 if not receiver_data:
                     results.append({"transaction_id": transaction_id, "status": "Receiver wallet not found"})
@@ -88,12 +86,12 @@ class BatchTransaction(BaseModel):
 
                 cursor.execute(
                     """
-                    INSERT INTO transactions (sender_user_id, receiver_user_id, sender_cashwallet_id, amount, transaction_id, from_currency, to_currency)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO transactions (sender_user_id, receiver_user_id, amount, transaction_id, from_currency, to_currency)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     """,
-                    (sender_user_id, receiver_user_id, sender_cashwallet_id, amount, transaction_id, from_currency, to_currency)
+                    (sender_user_id, receiver_user_id, amount, transaction_id, from_currency, to_currency)
                 )
-                results.append({"transaction_id": transaction_id, "status": "Success"})
+                results.append({"transaction_id": transaction_id, "status": "Transactions complete"})
 
             connection.commit()
             return results
