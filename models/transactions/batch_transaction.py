@@ -27,7 +27,7 @@ transactionsMappings = {
     'amount': 'amount',
 }
 
-RGJSONWriteThrough(GB, keysPrefix='__', mappings=transactionsMappings)
+RGJSONWriteThrough(keysPrefix='__', mappings=transactionsMappings)
 
 
 class BatchTransaction(BaseModel):

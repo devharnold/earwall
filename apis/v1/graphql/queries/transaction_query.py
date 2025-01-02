@@ -17,7 +17,7 @@ class Query(graphene.ObjectType):
             cursor = connection.cursor()
 
             cursor.execute(
-                "SELECT stransaction_id, sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount FROM transactions WHERE transaction_id = %s;",
+                "SELECT transaction_id, sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount FROM transactions WHERE transaction_id = %s;",
                 (transaction_id)
             )
             transaction = cursor.fetchone()

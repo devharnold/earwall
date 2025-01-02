@@ -6,27 +6,23 @@ import random
 
 class CreateTransaction(graphene.Mutation):
     class Arguments:
-        sender_user_email = graphene.String(required=True)
-        receiver_user_email = graphene.String(required=True)
-        sender_user_id = graphene.String(required=True)
-        receiver_user_id = graphene.String(required=True)
-        sender_cw_id = graphene.String(required=True)
-        receiver_cw_id = graphene.String(required=True)
-        sender_currency = graphene.String(required=True)
-        receiver_currency = graphene.String(required=True)
-        amount = graphene.String(required=True)
+        sender_user_id = graphene.Int(required=True)
+        receiver_user_id = graphene.Int(required=True)
+        from_currency = graphene.String(required=True)
+        to_currency = graphene.String(required=True)
+        amount = graphene.Decimal(required=True)
 
         transaction = Field(lambda: TransactionType)
 
-    def mutate_transaction(self, info, sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount):
+    def mutate_transaction(self, info, sender_user_id, receiver_user_id, from_currency, to_currency, amount):
         connection = get_db_connection()
         cursor = connection.cursor()
 
         transaction_id = self.generate_transaction_id(cursor)
 
         insert_query = """
-            INSERT INTO transactions (sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount)"""
-        cursor.execute(insert_query, (sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount))
+            INSERT INTO transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount)"""
+        cursor.execute(insert_query, (sender_user_id, receiver_user_id, from_currency, to_currency, amount))
         new_transaction = cursor.fetchone()
 
         connection.commit()
