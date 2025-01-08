@@ -6,23 +6,26 @@ import random
 
 class CreateTransaction(graphene.Mutation):
     class Arguments:
-        sender_user_id = graphene.Int(required=True)
-        receiver_user_id = graphene.Int(required=True)
+        user_id = graphene.Int(required=True)
+        user_email = graphene.String(required=True)
         from_currency = graphene.String(required=True)
         to_currency = graphene.String(required=True)
         amount = graphene.Decimal(required=True)
 
         transaction = Field(lambda: TransactionType)
 
-    def mutate_transaction(self, info, sender_user_id, receiver_user_id, from_currency, to_currency, amount):
+    def mutate_transaction(self, info, user_id, user_email, from_currency, to_currency, amount):
         connection = get_db_connection()
         cursor = connection.cursor()
 
         transaction_id = self.generate_transaction_id(cursor)
 
         insert_query = """
-            INSERT INTO transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount)"""
-        cursor.execute(insert_query, (sender_user_id, receiver_user_id, from_currency, to_currency, amount))
+            INSERT INTO transactions (user_id, user_email, from_currency, to_currency, amount)
+            VALUES (%s, %s, %s, %s, %s, CURRENT TIMESTAMP)
+            RETURNING user_id, user_email, from_currency, to_currency, amount
+        """
+        cursor.execute(insert_query, (user_id, user_email, from_currency, to_currency, amount))
         new_transaction = cursor.fetchone()
 
         connection.commit()

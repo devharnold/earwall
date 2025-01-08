@@ -15,14 +15,12 @@ from engine.db_storage import get_db_connection
 
 
 class CashWallet(BaseModel):
-    def __init__(self, cashwallet_id, user_id, user_email, balance, currency, password):
+    def __init__(self, cashwallet_id, user_id, balance, currency, password):
         self.cashwallet_id = str(uuid.uuid4())[:8]
         self.user_id = user_id
         self.password = password
         self.balance = balance
         self.currency = currency
-        self.user_email = user_email
-    
 
     @classmethod
     def create_new_wallet(cls, username: str, password: str, user_id: int, cashwallet_id: int, currency: str, balance: int):

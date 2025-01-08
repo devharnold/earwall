@@ -8,25 +8,27 @@ import string
 
 class CreateBatchTransaction(graphene.Mutation):
     class Arguments:
-        sender_user_id = graphene.String(required=True)
-        receiver_user_id = graphene.String(required=True)
+        user_id = graphene.String(required=True)
+        user_email = graphene.String(required=True)
         from_currency = graphene.String(required=True)
         to_currency = graphene.String(required=True)
         amount = graphene.Decimal(required=True)
 
         batch_trnasaction = Field(lambda: BatchTransactionType)
 
-        def mutate_batch_transaction(self, info, sender_user_id, receiver_user_id, from_currency, to_currency, amount):
+        def mutate_batch_transaction(self, info, user_id, user_email, from_currency, to_currency, amount):
             connection = get_db_connection()
             cursor = connection.cursor()
             connection.autocommit = False
 
-            batch_transaction_id = self.generate_b_transaction_id(cursor)
+            b_transaction_id = self.generate_b_transaction_id(cursor)
 
             insert_query = """
-                INSERT INTO batch_transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount)
-                """
-            cursor.execute(insert_query, (sender_user_id, receiver_user_id, from_currency, to_currency))
+                INSERT INTO batch_transactions (sender_user_id, user_email, from_currency, to_currency, amount)
+                VALUES (%s, %s, %s, %s, %s, CURRENT TIMESTAMP)
+                RETURNING user_id, from_currency, to_currency, amount
+            """
+            cursor.execute(insert_query, (user_id, user_email, from_currency, to_currency, amount))
             new_batch_transaction = cursor.fetchone()
 
             connection.commit()

@@ -166,6 +166,53 @@ def create_accounts_table():
             cursor.close()
             connection.close()
 
+def create_audit_logs_table():
+    """Create audit logs table"""
+    connection = get_db_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            create_query = """
+                CREATE TABLE IF NOT EXISTS audit_logs (
+                    log_id VARCHAR(10) PRIMARY KEY,
+                    action_type VARCHAR(100) NOT NULL,
+                    user_id REFERENCES users(user_id),
+                    details,
+                    ip_address 
+                )
+            """
+            cursor.execute(create_query)
+            connection.commit()
+            print("Accounts table created successfully")
+        except Exception as e:
+            print(f"Error creating accounts table: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+
+def create_fraud_detection_table():
+    """Table that lists activites in fraud detection"""
+    connection = get_db_connection()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            create_query = """
+                CREATE TABLE IF NOT EXISTS fraud_detection (
+                    activity_id VARCHAR(8) PRIMARY KEY,
+                    transaction_id REFERENCES transactions(transaction_id),
+                    user_id REFERENCES users(user_id),
+                    reason VARCHAR(20)NOT NULL
+                )
+            """
+            cursor.execute(create_query)
+            connection.commit()
+            print("Accounts table created successfully")
+        except Exception as e:
+            print(f"Error creating accounts table: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+
 
 if __name__ == "__main__":
     create_users_table()
@@ -173,5 +220,7 @@ if __name__ == "__main__":
     create_cashwallet_table()
     create_transactions_table()
     create_accounts_table()
+    create_audit_logs_table()
+    create_fraud_detection_table()
     print("All tables created successfully")
     app.run(debug=True)

@@ -17,7 +17,7 @@ class Query(graphene.ObjectType):
             cursor = connection.cursor()
 
             cursor.execute(
-                "SELECT transaction_id, sender_user_email, receiver_user_email, sender_user_id, receiver_user_id, sender_cw_id, receiver_cw_id, sender_currency, receiver_currency, amount FROM transactions WHERE transaction_id = %s;",
+                "SELECT transaction_id, user_id, user_email, from_currency, to_currency, amount FROM transactions WHERE transaction_id = %s;",
                 (transaction_id)
             )
             transaction = cursor.fetchone()
@@ -28,16 +28,12 @@ class Query(graphene.ObjectType):
                 raise GraphQLError("Cannot trace Transaction not found")
             
             return TransactionType(
-                transaction_id=transaction[0],
-                sender_user_email=transaction[1],
-                receiver_user_email=transaction[2],
-                sender_user_id=transaction[3],
-                receiver_transaction_id=transaction[4],
-                sender_cw_id=transaction[5],
-                receiver_cw_id=transaction[6],
-                sender_currency=transaction[7],
-                receiver_currency=transaction[8],
-                amount=transaction[9]
+                user_id=transaction[0],
+                user_email=transaction[1],
+                from_currency=transaction[2],
+                to_currency=transaction[3],
+                amount=transaction[4],
+                transaction_id=transaction[5]
             )
         except Exception as e:
             raise GraphQLError(f"Cannot get transaction: {str(e)}")
