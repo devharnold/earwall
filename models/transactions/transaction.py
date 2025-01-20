@@ -19,9 +19,9 @@ load_dotenv()
 class Transaction(BaseModel):
     """Transaction model"""
 
-    def __init__(self, sender_user_id, user_email, amount, from_currency, to_currency, transaction_id):
+    def __init__(self, sender_user_id, receiver_user_id, amount, from_currency, to_currency, transaction_id):
         self.sender_user_id = sender_user_id
-        self.user_email = user_email
+        self.receiver_user_id = receiver_user_id
         self.amount = Decimal(amount)
         self.from_currency = from_currency
         self.to_currency = to_currency
@@ -39,8 +39,8 @@ class Transaction(BaseModel):
 
             result = []
             for transaction in transaction:
-                user_id = transaction['user_id']
-                user_email = transaction['user_email']
+                sender_user_id = transaction['sender_user_id']
+                receiver_user_id = transaction['receiver_user_id']
                 from_currency = transaction['from_currency']
                 to_currency = transaction['to_currency']
                 amount = transaction['amount']
@@ -49,12 +49,12 @@ class Transaction(BaseModel):
                 if amount <= 0:
                     result.append({"transaction_id": transaction_id, "status": "Incomplete! Cannot transfer 0 funds"})
                     continue
-                
+
                 if from_currency not in available_currencies or to_currency not in available_currencies:
                     result.append({"transaction_id": transaction_id, "status": "Currency not available!"})
                     continue
 
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (user_id))
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_user_id))
                 sender_data = cursor.fetchone()
                 if not sender_data:
                     result.append({"transaction_id": transaction_id, "status": "Sender wallet not found"})
@@ -65,18 +65,18 @@ class Transaction(BaseModel):
                     result.append({"transaction_id": transaction_id, "status": "Insufficient funds in your wallet"})
                     continue
 
-                #cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id))
-                #receiver_data = cursor.fetchone()
-                #if not receiver_data:
-                #    result.append({"transaction_id": transaction_id, "status": "Receiver wallet not found!"})
-                #    continue
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id))
+                receiver_data = cursor.fetchone()
+                if not receiver_data:
+                    result.append({"transaction_id": transaction_id, "status": "Receiver wallet not found!"})
+                    continue
 
                 cursor.execute(
                     """
                     INSERT INTO transactions (user_id, user_email, from_currency, to_currency, amount, transaction_id)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """,
-                    (user_id, user_email, from_currency, to_currency, amount, transaction_id)
+                    (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
                 )
                 result.append({"transaction_id": transaction_id, "status": "Transaction Complete"})
 

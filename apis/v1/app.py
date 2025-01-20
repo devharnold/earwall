@@ -1,13 +1,6 @@
-# setting up the flask app
+#!/usr/bin/env python3
+"""Flask application"""
 
-from flask import Flask
-from apis.v1.views import graphql_bp
+from engine.db_storage import get_db_connection
+from flask_cors import CORS
 
-app = Flask(__name__)
-
-#register the graphql blueprint
-app.register_blueprint(graphql_bp, url_prefix='/api/v1')
-
-
-if __name__ == "__main__":
-    app.run(debug=True, port=5000)

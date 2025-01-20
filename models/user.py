@@ -15,6 +15,7 @@ from kafka import KafkaConsumer
 import paypalrestsdk
 import logging
 import json
+import bcrypt
 from web3 import HTTPProvider
 
 
@@ -33,8 +34,27 @@ class User(BaseModel):
     def hash_password(password):
         """Hash a user's password using the sha256 algorithm and add salt"""
         salt = os.urandom(16) # New salt
-        hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+        hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 16)
         return salt, hashed_password
+    
+    @classmethod
+    def find_user_by_email(cls, email):
+        connection = get_db_connection()
+        with connection:
+            with connection.cursor() as cursor:
+                query = "SELECT * FROM users WHERE email = %s"
+                cursor.execute(query, (email))
+                result = cursor.fetchone()
+                if result:
+                    return cls(
+                        first_name=result['first_name'],
+                        last_name=result['last_name'],
+                        email=result['email']
+                    )
+                return None
+            
+    def verify_password(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
     
     def save(self):
         """Saves a new user to the db"""
@@ -42,11 +62,11 @@ class User(BaseModel):
         cursor = connection.cursor()
 
         query = """
-        INSERT INTO users (first_name, last_name, user_email, password)
-        VALUES (%s, %s, %s, %s);
+        INSERT INTO users (first_name, last_name, user_email, user_id, password)
+        VALUES (%s, %s, %s, %s, %s);
         """
         try:
-            cursor.execute(query, (self.first_name, self.last_name, self.user_email, self.password))
+            cursor.execute(query, (self.first_name, self.last_name, self.user_email, self.hashed_password))
             connection.commit()
             print("User saved successfully")
         except Exception as e:
@@ -63,7 +83,7 @@ class User(BaseModel):
 
         hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
 
-        query = "UPDATE users SET password = %s WHERE email = %s;"
+        query = "UPDATE users SET password = %s WHERE user_email = %s;"
         try:
             cursor.execute(query, (hashed_password, user_email))
             connection.commit()
