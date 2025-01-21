@@ -8,6 +8,8 @@ from models.baseModel import BaseModel
 from models.wallets.cashwallet import CashWallet
 import os
 from flask import jsonify
+import random
+import string
 import uuid
 import requests
 from decimal import Decimal
@@ -18,14 +20,13 @@ load_dotenv()
 
 class Transaction(BaseModel):
     """Transaction model"""
-
     def __init__(self, sender_user_id, receiver_user_id, amount, from_currency, to_currency, transaction_id):
         self.sender_user_id = sender_user_id
         self.receiver_user_id = receiver_user_id
         self.amount = Decimal(amount)
         self.from_currency = from_currency
         self.to_currency = to_currency
-        self.transaction_id = str(uuid.uuid4())
+        self.transaction_id = self.generate_transaction_id()
 
     @classmethod
     def process_p2p_transaction(cls, transaction):
@@ -84,10 +85,47 @@ class Transaction(BaseModel):
             return result
         except Exception as e:
             connection.rollback()
-            return {"error": "Transaction failed", "message": str(e)}, 500
+            return jsonify({"error": "Transaction failed", "message": str(e)}), 500
         finally:
             connection.close()
             cursor.close()
+
+    @classmethod
+    def fetch_transaction_data(cls, sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id):
+        """Fetch P2P transactions that have been done by a specific user"""
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            connection.autocommit = False
+
+            result = []
+            for transaction in transaction:
+                sender_user_id = transaction['sender_user_id']
+                receiver_user_id = transaction['receiver_user_id']
+                from_currency = transaction['from_currency']
+                to_currency = transaction['to_currency']
+                amount = transaction['amount']
+                transaction_id = transaction['transaction_id']
+
+                cursor.execute("SELECT * FROM transactions")
+                transaction_data = cursor.fetchall()
+                if not transaction_data:
+                    result.append({"status": "No transactions found"})
+                    continue
+                
+                connection.commit()
+                return result
+        except Exception as e:
+            connection.rollback()
+            return jsonify({"error": str(e)}), 500
+        finally:
+            connection.close()
+            cursor.close()
+
+    
+    def generate_transaction_id():
+        characters = string.ascii_uppercase + string.digits
+        return ''.join(random.choices(characters, k=10))
 
 
     @classmethod
