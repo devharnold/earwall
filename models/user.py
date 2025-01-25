@@ -21,7 +21,7 @@ from web3 import HTTPProvider
 
 class User(BaseModel):
     """Representation of a user model"""
-    def __init__(self, user_id, first_name, last_name, user_email, paypal_id, paypal_email, password=None):
+    def __init__(self, user_id, first_name, last_name, user_email, paypal_id, paypal_email, password):
         self.user_id = str(uuid.uuid4())[:8]
         self.first_name = first_name
         self.last_name = last_name
@@ -30,8 +30,46 @@ class User(BaseModel):
         self.paypal_id = paypal_id
         self.paypal_email = paypal_email
 
-    @staticmethod
-    def hash_password(password):
+    def create_user(self, first_name, last_name, user_email, password, user_id):
+        """Function to create a user and insert into the database."""
+        from flask import jsonify
+    
+        # Hash the password
+        hashed_password = self.hash_password(password)
+    
+        try:
+            # Establish database connection
+            connection = get_db_connection()
+            cursor = connection.cursor()
+    
+            # Begin transaction
+            connection.autocommit = False
+    
+            # SQL query to insert the user
+            insert_query = """
+            INSERT INTO users (user_id, first_name, last_name, user_email, password)
+            VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (user_id, first_name, last_name, user_email, hashed_password))
+    
+            # Commit transaction
+            connection.commit()
+    
+            return jsonify({"message": "User created successfully"}), 201
+    
+        except Exception as e:
+            # Rollback in case of an error
+            connection.rollback()
+            return jsonify({"error": str(e)}), 500
+    
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    @classmethod
+    def hash_password(self, password):
         """Hash a user's password using the sha256 algorithm and add salt"""
         salt = os.urandom(16) # New salt
         hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 16)
@@ -49,7 +87,7 @@ class User(BaseModel):
                     return cls(
                         first_name=result['first_name'],
                         last_name=result['last_name'],
-                        email=result['email']
+                        user_email=result['user_email']
                     )
                 return None
             

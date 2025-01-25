@@ -5,8 +5,8 @@ import psycopg2
 from psycopg2 import sql
 import os
 from models.account import Account
-from models.baseModel import BaseModel
 from models.user import User
+from models.baseModel import BaseModel
 from flask import jsonify, request
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -18,46 +18,84 @@ class CashWallet(BaseModel):
     def __init__(self, cashwallet_id, user_id, balance, currency, password):
         self.cashwallet_id = str(uuid.uuid4())[:8]
         self.user_id = user_id
-        self.password = password
+        self.password = User.password()
         self.balance = balance
         self.currency = currency
 
     @classmethod
-    def create_new_wallet(cls, username: str, password: str, user_id: int, cashwallet_id: int, currency: str, balance: int):
+    def create_new_wallet(cls, user_id, cashwallet_id, currency, balance=0.00):
+        """
+        Creates a new wallet for the user.
+        """
         available_currencies = ["GBP", "KES", "USD"]
-        wallet_types = ["Premium", "Regular"]
-
-        data = request.get_json()
-        username = data['username']
-        user_id = data['user_id']
-        cashwallet_id = data['cashwallet_id']
-        currency = data['currency']
-        wallet_type = data['wallet_type', 'Regular'] #default to regular
-        
+    
         if not user_id:
             return jsonify({"error": "Cannot find User"}), 404
-        
+    
         if currency not in available_currencies:
             return jsonify({"error": "Unsupported currency"}), 400
-        
-        if wallet_type not in wallet_types:
-            return jsonify({"error": "Invalid wallet type"}), 400
-
-        hashed_password =generate_password_hash(password)
-        
+    
         try:
-            conn=get_db_connection()
-            cursor=conn.cursor()
-
+            # Database operations
+            connection = get_db_connection()
+            cursor = connection.cursor()
+    
             insert_query = """
-            INSERT INTO cash_wallet (user_id, password, username, wallet_id, balance)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO cash_wallet (user_id, wallet_id, currency, balance)
+            VALUES (%s, %s, %s, %s)
             """
-            cursor.execute(insert_query, (user_id, password, username, cashwallet_id, balance))
-            conn.commit()
+            cursor.execute(insert_query, (user_id, cashwallet_id, currency, balance))
+            connection.commit()
+    
             return jsonify({"message": "Wallet created"}), 201
+    
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+    
         finally:
-            cursor.close()
-            conn.close()
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    
+
+    @classmethod
+    def fetch_wallet_data(cls, user_id, cashwallet_id):
+        """Method to fetch cash wallet data for a specific user."""
+        from flask import jsonify
+
+        try:
+            # Establish database connection
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            # SQL query to fetch wallet data
+            fetch_query = """
+            SELECT user_id, balance, currency, cashwallet_id 
+            FROM cashwallets 
+            WHERE cashwallet_id = %s AND user_id = %s
+            """
+            cursor.execute(fetch_query, (cashwallet_id, user_id))
+            wallet_data = cursor.fetchone()
+
+            if wallet_data:
+                # Map data to a readable format
+                result = {
+                    "user_id": wallet_data[0],
+                    "balance": wallet_data[1],
+                    "currency": wallet_data[2],
+                    "cashwallet_id": wallet_data[3]
+                }
+                return jsonify(result), 200
+            else:
+                return jsonify({"error": "Cash wallet not found"}), 404
+
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()

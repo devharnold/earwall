@@ -7,6 +7,8 @@ from rgsync import RGJSONWriteBehind, RGJSONWriteThrough
 from rgsync.Connectors import PostgresConnector, PostgresConnection
 from kafka import KafkaProducer, KafkaClient
 import uuid
+import random
+import string
 import requests
 from decimal import Decimal
 from engine.db_storage import get_db_connection
@@ -102,3 +104,67 @@ class BatchTransaction(BaseModel):
         finally:
             connection.close()
             cursor.close()
+
+
+    @classmethod
+    def fetch_transaction_data(cls, sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id):
+        """Fetch P2P transactions that have been done by a specific user"""
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            connection.autocommit = False
+
+            result = []
+            for batch_transaction in batch_transaction:
+                sender_user_id = batch_transaction['sender_user_id']
+                receivers = batch_transaction['receiver_user_id']
+                from_currency = batch_transaction['from_currency']
+                to_currency = batch_transaction['to_currency']
+                amount = batch_transaction['amount']
+                transaction_id = batch_transaction['transaction_id']
+
+                cursor.execute("SELECT * FROM transactions")
+                transaction_data = cursor.fetchall()
+                if not transaction_data:
+                    result.append({"status": "No transactions found"})
+                    continue
+                
+                connection.commit()
+                return result
+        except Exception as e:
+            connection.rollback()
+            return jsonify({"error": str(e)}), 500
+        finally:
+            connection.close()
+            cursor.close()
+
+    
+    def generate_transaction_id():
+        characters = string.ascii_uppercase + string.digits
+        return ''.join(random.choices(characters, k=10))
+
+
+    @staticmethod
+    def convert_currency(cls, amount: Decimal, from_currency: str, to_currency: str) -> Decimal:
+        """Converts an amount from one currency to another"""
+        if from_currency == to_currency:
+            return amount
+
+        exchange_rate = cls.get_exchange_rate(from_currency, to_currency)
+        return amount * Decimal(exchange_rate)
+
+    @classmethod
+    def get_exchange_rate(cls, from_currency: str, to_currency: str) -> float:
+        """Fetches exchange rate between two currencies."""
+        url = f"https://api.exchangerate-api.com/v4/latest/{from_currency}"
+        response = requests.get(url)
+        data = response.json()
+
+        if response.status_code == 200 and "rates" in data:
+            exchange_rate = data['rates'].get(to_currency)
+            if exchange_rate:
+                return exchange_rate
+            else:
+                raise ValueError(f"Exchange rate not available for {to_currency}")
+        else:
+            raise ValueError("Failed to fetch exchange rates")

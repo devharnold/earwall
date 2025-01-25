@@ -46,7 +46,7 @@ def get_user():
 @app_views.route('/users', methods=['POST'], strict_slashes=False)
 def register_user():
     data = request.json()
-    user = User(data['first_name'], data['last_name'], data['email'], data['password'])
+    user = User(data['first_name'], data['last_name'], data['user_email'], data['password'])
     try:
         user.save()
         return jsonify({"message": "User registered successfully"}), 201

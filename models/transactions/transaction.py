@@ -128,7 +128,7 @@ class Transaction(BaseModel):
         return ''.join(random.choices(characters, k=10))
 
 
-    @classmethod
+    @staticmethod
     def convert_currency(cls, amount: Decimal, from_currency: str, to_currency: str) -> Decimal:
         """Converts an amount from one currency to another"""
         if from_currency == to_currency:
