@@ -10,7 +10,6 @@ from models.baseModel import BaseModel
 from flask import jsonify, request
 import uuid
 from datetime import datetime, timedelta, timezone
-from werkzeug.security import generate_password_hash
 from engine.db_storage import get_db_connection
 
 
@@ -28,30 +27,30 @@ class CashWallet(BaseModel):
         Creates a new wallet for the user.
         """
         available_currencies = ["GBP", "KES", "USD"]
-    
+
         if not user_id:
             return jsonify({"error": "Cannot find User"}), 404
-    
+
         if currency not in available_currencies:
             return jsonify({"error": "Unsupported currency"}), 400
-    
+
         try:
             # Database operations
             connection = get_db_connection()
             cursor = connection.cursor()
-    
+
             insert_query = """
-            INSERT INTO cash_wallet (user_id, wallet_id, currency, balance)
+            INSERT INTO cashwallets (user_id, cashwallet_id, currency, balance)
             VALUES (%s, %s, %s, %s)
             """
             cursor.execute(insert_query, (user_id, cashwallet_id, currency, balance))
             connection.commit()
-    
+
             return jsonify({"message": "Wallet created"}), 201
-    
+
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-    
+
         finally:
             if cursor:
                 cursor.close()
@@ -61,7 +60,7 @@ class CashWallet(BaseModel):
     
 
     @classmethod
-    def fetch_wallet_data(cls, user_id, cashwallet_id):
+    def fetch_wallet_data(cls, cashwallet_id):
         """Method to fetch cash wallet data for a specific user."""
         from flask import jsonify
 
@@ -71,12 +70,7 @@ class CashWallet(BaseModel):
             cursor = connection.cursor()
 
             # SQL query to fetch wallet data
-            fetch_query = """
-            SELECT user_id, balance, currency, cashwallet_id 
-            FROM cashwallets 
-            WHERE cashwallet_id = %s AND user_id = %s
-            """
-            cursor.execute(fetch_query, (cashwallet_id, user_id))
+            cursor.execute("SELECT * FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id))
             wallet_data = cursor.fetchone()
 
             if wallet_data:

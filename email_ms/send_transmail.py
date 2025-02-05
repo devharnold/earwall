@@ -1,14 +1,17 @@
 # send transaction mails file
 import smtplib
+import os
+import dotenv
+from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from models.user import User
 from engine.db_storage import get_db_connection
 from flask import jsonify
 
-
 class EmailTransactionService:
     def __init__(self, smtp_host, smtp_port, smtp_user, smtp_password):
+        load_dotenv()
         """Initializes with smtp server details
         Args:
             smtp_host (str): The smtp server host
@@ -20,6 +23,11 @@ class EmailTransactionService:
         self.smtp_port = smtp_port
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
+
+        smtp_host = os.getenv("SMTP_HOST")
+        smtp_port = os.getenv("SMTP_PORT")
+        smtp_user = os.getenv("SMTP_USER")
+        smtp_password = os.getenv("SMTP_PASSWORD")
 
     def send_email_notification(self, to_email, subject, message_body):
         """boilerplate code to send emails of different topics"""
@@ -46,7 +54,7 @@ class EmailTransactionService:
         2. Received funds
     """
 
-    def send_sent_funds(sender_email, user_id, cashwallet_id, amount, first_name, last_name, to_email, transaction_id):
+    def send_sent_funds(smtp_user, user_id, cashwallet_id, amount, first_name, last_name, to_email, transaction_id):
         #"""Sends email to the user, confirming about the sent funds and also providing the transaction details"""
         #subject= "Sent Funds"
         #message_body= f"Dear Client, \n\nYour transaction of {transaction_details['amount']}has been processed. \n\nThank you!"
@@ -82,7 +90,7 @@ class EmailTransactionService:
                 f"Best Regards,\n"
                 f"Tarantula Team."
             )
-            sender_email.send_email(to_email, subject, message_body)
+            smtp_user.send_email_notification(to_email, subject, message_body)
 
         except Exception as e:
             conn.rollback()
@@ -91,7 +99,7 @@ class EmailTransactionService:
             cursor.close()
             conn.close()
 
-    def send_received_funds(sender_email, first_name, amount, last_name, balance, user_id, cashwallet_id, transaction_id, to_email):
+    def send_received_funds(smtp_user, first_name, amount, last_name, balance, user_id, cashwallet_id, transaction_id, to_email):
         """function to notify user about received funds"""
         try:
             conn=get_db_connection()
@@ -121,7 +129,7 @@ class EmailTransactionService:
                 f"Best Regards,\n"
                 f"Tarantula Team"
             )
-            sender_email.send_email(to_email, subject, message_body)
+            smtp_user.send_email_notification(to_email, subject, message_body)
 
         except Exception as e:
             conn.rollback()
@@ -130,35 +138,35 @@ class EmailTransactionService:
             conn.close()
             cursor.close()
 
-    def send_mpesa_app(sender_email, to_email, user_id, amount, transaction_id, wallet_id):
+    def send_mpesa_app(smtp_user, to_email, user_id, amount, transaction_id, cashwallet_id):
         """Sends email notification to the user after funds transfer from Mpesa to the app"""
         try:
-            conn=get_db_connection()
-            cursor=conn.cursor()
+            connection = get_db_connection()
+            cursor = connection.cursor()
 
             cursor.execute(
-                "SELECT user_id FROM cash_wallets WHERE wallet_id=%s" (user_id, wallet_id)
+                "SELECT user_id FROM cashwallets WHERE wallet_id=%s" (user_id, cashwallet_id)
             )
             user_id=cursor.fetchone()
-            conn.commit()
+            connection.commit()
 
             cursor.execute(
                 "SELECT amount FROM transactions WHERE transaction_id=%s" (amount, transaction_id)
             )
             transaction_id=cursor.fetchone()
-            conn.commit()
+            connection.commit()
 
             subject="Transaction Alert!"
             message_body=(
                 f"Dear Client,\n"
-                f"{amount} has been credited to your wallet {wallet_id} from mpesa\n\n"
+                f"{amount} has been credited to your wallet {cashwallet_id} from mpesa\n\n"
                 f"Tarantula Team."
             )
-            sender_email.send_email(to_email, subject, message_body)
+            smtp_user.send_email_notification(to_email, subject, message_body)
 
         except Exception as e:
-            conn.rollback()
+            connection.rollback()
             return jsonify({"error": str(e)}), 500
         finally:
             cursor.close()
-            conn.close()
+            connection.close()

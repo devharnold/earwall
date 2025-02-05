@@ -10,6 +10,7 @@ import os
 import uuid
 from os import getenv
 from models import BaseModel
+from email_ms.send_regmail import RegularEmailService
 from engine.db_storage import get_db_connection
 from kafka import KafkaConsumer
 import paypalrestsdk
@@ -33,35 +34,37 @@ class User(BaseModel):
     def create_user(self, first_name, last_name, user_email, password, user_id):
         """Function to create a user and insert into the database."""
         from flask import jsonify
-    
+
         # Hash the password
         hashed_password = self.hash_password(password)
-    
+
         try:
             # Establish database connection
             connection = get_db_connection()
             cursor = connection.cursor()
-    
+
             # Begin transaction
             connection.autocommit = False
-    
+
             # SQL query to insert the user
             insert_query = """
             INSERT INTO users (user_id, first_name, last_name, user_email, password)
             VALUES (%s, %s, %s, %s, %s)
             """
             cursor.execute(insert_query, (user_id, first_name, last_name, user_email, hashed_password))
-    
+
             # Commit transaction
             connection.commit()
-    
+
+            RegularEmailService.send_welcome_mail()
+
             return jsonify({"message": "User created successfully"}), 201
-    
+
         except Exception as e:
             # Rollback in case of an error
             connection.rollback()
             return jsonify({"error": str(e)}), 500
-    
+
         finally:
             if cursor:
                 cursor.close()

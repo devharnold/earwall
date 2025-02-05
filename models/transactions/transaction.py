@@ -6,6 +6,7 @@ import psycopg2
 from psycopg2 import sql
 from models.baseModel import BaseModel
 from models.wallets.cashwallet import CashWallet
+from email_ms.send_transmail import EmailTransactionService
 import os
 from flask import jsonify
 import random
@@ -71,6 +72,13 @@ class Transaction(BaseModel):
                 if not receiver_data:
                     result.append({"transaction_id": transaction_id, "status": "Receiver wallet not found!"})
                     continue
+
+                while sender_user_id:
+                    EmailTransactionService.send_sent_funds()
+                    continue
+
+                while receiver_user_id:
+                    EmailTransactionService.send_received_funds()
 
                 cursor.execute(
                     """
@@ -154,51 +162,51 @@ class Transaction(BaseModel):
             raise ValueError("Failed to fetch exchange rates")
 
     @classmethod
-    def withdraw_from_account(cls, account_id, amount, cashwallet_id):
+    def withdraw_from_account(cls, user_account_id, amount, cashwallet_id):
         """Withdraw funds from an account to a wallet."""
         try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+            connection = get_db_connection()
+            cursor = connection.cursor()
 
-            conn.autocommit = False
+            connection.autocommit = False
 
             # Check account balance
-            cursor.execute("SELECT balance FROM accounts WHERE account_id = %s", (account_id,))
+            cursor.execute("SELECT balance FROM accounts WHERE user_account_id = %s", (user_account_id,))
             account_balance = cursor.fetchone()
             if not account_balance or Decimal(account_balance[0]) < amount:
                 return jsonify({"error": "Insufficient funds in account!"}), 400
 
             # Update account and wallet balances
-            cursor.execute("UPDATE accounts SET balance = balance - %s WHERE account_id = %s", (amount, account_id))
+            cursor.execute("UPDATE accounts SET balance = balance - %s WHERE user_account_id = %s", (amount, user_account_id))
             cursor.execute("UPDATE cashwallets SET balance = balance + %s WHERE cashwallet_id = %s", (amount, cashwallet_id))
 
             # Log the transaction
             cursor.execute(
                 """
-                INSERT INTO transactions (account_id, cashwallet_id, amount, transaction_type, status)
+                INSERT INTO transactions (user_account_id, cashwallet_id, amount, transaction_type, status)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (account_id, cashwallet_id, amount, 'Withdrawal',)
+                (user_account_id, cashwallet_id, amount, 'Withdrawal',)
             )
 
-            conn.commit()
+            connection.commit()
             return jsonify({"message": "Withdrawal successful"}), 201
 
         except Exception as e:
-            conn.rollback()
+            connection.rollback()
             return jsonify({"error": str(e)}), 500
         finally:
             cursor.close()
-            conn.close()
+            connection.close()
 
     @classmethod
-    def deposit_to_account(cls, amount, account_id, cashwallet_id):
+    def deposit_to_account(cls, amount, user_account_id, cashwallet_id):
         """Deposit funds from a wallet to an account."""
         try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
+            connection = get_db_connection()
+            cursor = connection.cursor()
 
-            conn.autocommit = False
+            connection.autocommit = False
 
             # Check wallet balance
             cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id,))
@@ -208,7 +216,7 @@ class Transaction(BaseModel):
 
             # Update wallet and account balances
             cursor.execute("UPDATE cashwallets SET balance = balance - %s WHERE cashwallet_id = %s", (amount, cashwallet_id))
-            cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, account_id))
+            cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, user_account_id))
 
             # Log the transaction
             cursor.execute(
@@ -216,15 +224,15 @@ class Transaction(BaseModel):
                 INSERT INTO transactions (cashwallet_id, account_id, amount, transaction_type, status)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (cashwallet_id, account_id, amount, 'Deposit',)
+                (cashwallet_id, user_account_id, amount, 'Deposit',)
             )
 
-            conn.commit()
+            connection.commit()
             return jsonify({"message": "Deposit successful"}), 201
 
         except Exception as e:
-            conn.rollback()
+            connection.rollback()
             return jsonify({"error": str(e)}), 500
         finally:
             cursor.close()
-            conn.close()
+            connection.close()

@@ -121,8 +121,8 @@ def create_transactions_table():
                     transaction_id SERIAL PRIMARY KEY,
                     sender_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     receiver_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-                    sender_wallet_id INTEGER REFERENCES cashwallets(cashwallet_id) ON DELETE CASCADE,
-                    receiver_wallet_id INTEGER REFERENCES cashwallets(cashwallet_id) ON DELETE CASCADE,
+                    from_currency VARCHAR(3) NOT NULL,
+                    to_currency VARCHAR(3) NOT NULL,
                     transaction_type VARCHAR(50) NOT NULL,
                     amount DECIMAL(20, 2) NOT NULL,
                     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -141,19 +141,20 @@ def create_transactions_table():
             connection.close()
 
 
-def create_accounts_table():
+def create_user_accounts_table():
     """Create accounts table."""
     connection = get_db_connection()
     if connection:
         try:
             cursor = connection.cursor()
             create_query = """
-                CREATE TABLE IF NOT EXISTS accounts (
+                CREATE TABLE IF NOT EXISTS user_accounts (
                     account_id VARCHAR(10) PRIMARY KEY,
                     account_number VARCHAR(13) UNIQUE,
                     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                     account_type VARCHAR(50) NOT NULL,
                     balance DECIMAL(20, 8) NOT NULL DEFAULT 0.00,
+                    currency VARCHAR(10) NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     create_business_account_table()
     create_cashwallet_table()
     create_transactions_table()
-    create_accounts_table()
+    create_user_accounts_table()
     create_audit_logs_table()
     create_fraud_detection_table()
     print("All tables created successfully")

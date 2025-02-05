@@ -2,12 +2,13 @@
 
 import os
 import smtplib
+import dotenv
+from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from models.user import User
 from engine.db_storage import get_db_connection
 from flask import jsonify
-
 
 class RegularEmailService:
     """Initialize the smtp server details
@@ -15,12 +16,19 @@ class RegularEmailService:
         - smtp_port: The smtp server port
         - smtp_host: The smtp server host
         - smtp_user: The senders email address
-        - smtp_password: The senders email password or app-specific password"""
+        - smtp_password: The senders email password or app-specific password
+    """
     def __init__(self, smtp_host, smtp_port, smtp_user, smtp_password):
+        load_dotenv()
         self.smtp_port = smtp_port
         self.smtp_host = smtp_host
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
+
+        smtp_host = os.getenv("SMTP_HOST")
+        smtp_port = os.getenv("SMTP_PORT")
+        smtp_user = os.getenv("SMTP_USER")
+        smtp_password = os.getenv("SMTP_PASSWORD")
 
     def send_email_notification(self, to_email, subject, messsage_body):
         """Function to send email notification through the smtp service to a user"""
@@ -40,16 +48,16 @@ class RegularEmailService:
             print(f"Failed to send email to {to_email}: e")
             raise
 
-    def send_welcome_mail(sender_email, user_id, to_email):
+    def send_welcome_mail(smtp_user, user_id, to_email):
         """Sends a Welcome mail to the user after signing up for our platform"""
         try:
-            conn=get_db_connection()
-            cursor=conn.cursor()
+            connection = get_db_connection()
+            cursor = connection.cursor()
             cursor.execute(
                 "SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id)
             )
             user_id=cursor.fetchone()[0]
-            conn.commit()
+            connection.commit()
 
             subject="Welcome Aboard!"
             message_body=(
@@ -58,11 +66,36 @@ class RegularEmailService:
                 f"Best Regards,\n"
                 f"Tarantula Team."
             )
-            sender_email.send_email(to_email, subject, message_body)
+            smtp_user.send_email_notification(to_email, subject, message_body)
             
         except Exception as e:
-            conn.rollback()
+            connection.rollback()
             return jsonify({"error": str(e)}), 500
         finally:
             cursor.close()
-            conn.close()
+            connection.close()
+
+    def send_password_reset_email(smtp_user, first_name, last_name, user_id, to_email):
+        """Sends an email notification to a user after a password update"""
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            cursor.execute("SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id))
+            first_name=cursor.fetchone()[0]
+            last_name=cursor.fetchone()[0]
+
+            connection.commit()
+
+            subject="Password Reset"
+            message_body = (
+                f"Dear {first_name} {last_name}\n\n"
+                f"You have successfully reset your password. Do not share your credentials with others\n\n"
+                f"Tarantula Team."
+            )
+            smtp_user.send_email_notification(to_email, subject, message_body)
+        except Exception as e:
+            connection.rollback()
+            return jsonify({"Error": str(e)}), 500
+        finally:
+            cursor.close()
+            connection.close()
