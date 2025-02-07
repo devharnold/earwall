@@ -8,6 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from models.user import User
 from engine.db_storage import get_db_connection
+from email_ms.paypal_mail import EmailPaypalInteractions
 from flask import jsonify
 
 class RegularEmailService:
@@ -30,25 +31,28 @@ class RegularEmailService:
         smtp_user = os.getenv("SMTP_USER")
         smtp_password = os.getenv("SMTP_PASSWORD")
 
-    def send_email_notification(self, to_email, subject, messsage_body):
+    def send_email_notification(self, user_id, subject, messsage_body):
         """Function to send email notification through the smtp service to a user"""
+        user_email = EmailPaypalInteractions.get_user_email()
+        if not user_email:
+            print(f"Email missing or user with id:{user_id} not found")
         msg=MIMEMultipart()
-        msg['FROM']=self.smtp_user
-        msg['TO']=to_email
-        msg['SUBJECT']=subject
+        msg['From'] = self.smtp_user
+        msg['To'] = user_email
+        msg['Subject'] = subject
         msg.attach(MIMEText(messsage_body, "plain"))
 
         try:
             with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_password)
-                server.sendmail(self.smtp_user, to_email, msg.as_string())
-            print(f"Email successfully sent to {to_email}")
+                server.sendmail(self.smtp_user, user_email, msg.as_string())
+            print(f"Email successfully sent to {user_email}")
         except Exception as e:
-            print(f"Failed to send email to {to_email}: e")
+            print(f"Failed to send email to {user_email}: e")
             raise
 
-    def send_welcome_mail(smtp_user, user_id, to_email):
+    def send_welcome_mail(smtp_user, user_id, user_email):
         """Sends a Welcome mail to the user after signing up for our platform"""
         try:
             connection = get_db_connection()
@@ -66,7 +70,7 @@ class RegularEmailService:
                 f"Best Regards,\n"
                 f"Tarantula Team."
             )
-            smtp_user.send_email_notification(to_email, subject, message_body)
+            smtp_user.send_email_notification(user_email, subject, message_body)
             
         except Exception as e:
             connection.rollback()
@@ -75,7 +79,7 @@ class RegularEmailService:
             cursor.close()
             connection.close()
 
-    def send_password_reset_email(smtp_user, first_name, last_name, user_id, to_email):
+    def send_password_reset_email(smtp_user, first_name, last_name, user_id, user_email):
         """Sends an email notification to a user after a password update"""
         try:
             connection = get_db_connection()
@@ -92,7 +96,7 @@ class RegularEmailService:
                 f"You have successfully reset your password. Do not share your credentials with others\n\n"
                 f"Tarantula Team."
             )
-            smtp_user.send_email_notification(to_email, subject, message_body)
+            smtp_user.send_email_notification(user_email, subject, message_body)
         except Exception as e:
             connection.rollback()
             return jsonify({"Error": str(e)}), 500

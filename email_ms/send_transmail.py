@@ -61,19 +61,19 @@ class EmailTransactionService:
         #email_sender.send_email(to_email, subject, message_body)
 
         try:
-            conn=get_db_connection()
-            cursor=conn.cursor()
+            connection = get_db_connection()
+            cursor = connection.cursor()
             cursor.execute(
                 "SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id)
             )
             user_id=cursor.fetchone()[0]
-            conn.commit()
+            connection.commit()
 
             cursor.execute(
                 "SELECT balance FROM cash_wallets WHERE cashwallet_id=%s", (cashwallet_id)
             )
             cashwallet_id = cursor.fetchone()
-            conn.commit()
+            connection.commit()
 
             cursor.execute(
                 "SELECT transaction_id FROM transactions WHERE cashwallet_id=%s", (cashwallet_id, transaction_id)
@@ -82,7 +82,7 @@ class EmailTransactionService:
             subject="Payment Successful"
             message_body=(
                 f"Dear Client \n\n"
-                f"Your payment of {amount} to {first_name, last_name} has successfully been transacted.\n"
+                f"Your transfer of {amount} to {first_name, last_name} has successfully been transacted.\n"
                 f"Receipt Details: \n"
                 f" - Amount: {amount}\n"
                 f" - Transaction ID: {transaction_id}\n\n"
@@ -93,13 +93,13 @@ class EmailTransactionService:
             smtp_user.send_email_notification(to_email, subject, message_body)
 
         except Exception as e:
-            conn.rollback()
+            connection.rollback()
             return jsonify({"error": str(e)}), 500
         finally:
             cursor.close()
-            conn.close()
+            connection.close()
 
-    def send_received_funds(smtp_user, first_name, amount, last_name, balance, user_id, cashwallet_id, transaction_id, to_email):
+    def send_received_funds(smtp_user, amount, balance, user_id, cashwallet_id, transaction_id, to_email):
         """function to notify user about received funds"""
         try:
             conn=get_db_connection()
@@ -109,7 +109,7 @@ class EmailTransactionService:
             user_id=cursor.fetchone()
             conn.commit()
 
-            cursor.execute("SELECT balance FROM cash_wallets WHERE wallet_id=%s", (cashwallet_id))
+            cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id=%s", (cashwallet_id))
             cashwallet_id=cursor.fetchone()
             conn.commit()
 
@@ -120,7 +120,7 @@ class EmailTransactionService:
             subject="Credited Funds"
             message_body=(
                 f"Dear User, \n\n"
-                f"You have received funds from {first_name, last_name}.\n\n"
+                f"You have received funds from {user_id}.\n\n"
                 f"Details of the transaction:\n"
                 f" - Amount: {amount}\n"
                 f" - Transaction ID: {transaction_id}\n\n"

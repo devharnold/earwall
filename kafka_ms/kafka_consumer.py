@@ -77,6 +77,6 @@ if __name__ == "__main__":
     }
     
     try:
-        run_consumers(topics)
+        KafkaConsumerHandler.run_consumers(topics)
     except KeyboardInterrupt:
         logging.info("Shutting down consumers...")
