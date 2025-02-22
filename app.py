@@ -1,22 +1,37 @@
 #!/usr/bin/env python3
 from flask import Flask, jsonify
 import os
-import psycopg2
-from dotenv import load_dotenv
 from engine.db_storage import get_db_connection, create_audit_logs_table, create_cashwallet_table, create_fraud_detection_table, create_user_accounts_table, create_users_table, create_transactions_table
-
-load_dotenv()
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_HOST = os.getenv('DB_HOST')
-DB_PORT = os.getenv('DB_PORT')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 app = Flask(__name__)
 
 @app.route("/")
 def startApp():
     return (f"Hello World!")
+
+def create_tables():
+    """ Function to create db tables if they don't exist """
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(create_audit_logs_table)
+        cursor.execute(create_cashwallet_table)
+        cursor.execute(create_fraud_detection_table)
+        cursor.execute(create_transactions_table)
+        cursor.execute(create_users_table)
+        cursor.execute(create_user_accounts_table)
+
+        connection.commit()
+        print("Tables created successfully!")
+
+    except Exception as e:
+        print(f"Error creating tables: {e}")
+        connection.rollback()
+
+    finally:
+        cursor.close()
+        connection.close()
 
 @app.route('/')
 def home():
@@ -26,14 +41,6 @@ def home():
 
     #execute a raw sql query
     cursor.execute('SELECT version();')
-    cursor.execute(
-        create_audit_logs_table,
-        create_users_table,
-        create_user_accounts_table,
-        create_cashwallet_table,
-        create_fraud_detection_table,
-        create_transactions_table
-    )
 
     db_version = cursor.fetchone()
 
@@ -41,8 +48,9 @@ def home():
     cursor.close()
     connection.close()
 
-    return jsonify({'PostgreSQL version': db_version})
+    return jsonify({'PostgreSQL version': db_version[0]})
 
 if __name__ == "__main__":
+    create_tables()
     get_db_connection()
     app.run(debug=True)

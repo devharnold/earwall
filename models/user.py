@@ -17,7 +17,7 @@ import paypalrestsdk
 import logging
 import json
 import bcrypt
-from web3 import HTTPProvider
+
 
 
 class User:
@@ -191,13 +191,13 @@ class ValidatePaypalId:
     #        logging.error(f"Error verifying paypalID: {e}")
     #        return False
         
-    def consume_notifications():
-        """Kafka consumer function to consume paypal config notifications"""
-        consumer = KafkaConsumer(
-            'deactivation-notifications',
-            bootstrap_servers = ['localhost:9092'],
-            value_desirializer=lambda m: json.loads(m.decode('utf-8'))
-        )
-        for message in consumer:
-            user_email = message.value.get("user_email")
-            created_wallet = message.value.get("expiration_days")
+    #def consume_notifications():
+    #    """Kafka consumer function to consume paypal config notifications"""
+    #    consumer = KafkaConsumer(
+    #        'deactivation-notifications',
+    #        bootstrap_servers = ['localhost:9092'],
+    #        value_desirializer=lambda m: json.loads(m.decode('utf-8'))
+    #    )
+    #    for message in consumer:
+    #        user_email = message.value.get("user_email")
+    #        created_wallet = message.value.get("expiration_days")
