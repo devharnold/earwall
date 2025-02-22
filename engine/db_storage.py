@@ -3,7 +3,6 @@ import os
 import psycopg2
 import dotenv
 from dotenv import load_dotenv
-from web3 import HTTPProvider
 
 # Load environment variables
 load_dotenv()

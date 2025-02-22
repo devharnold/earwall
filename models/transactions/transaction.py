@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-class Transaction(BaseModel):
+class Transaction:
     """Transaction model"""
     def __init__(self, sender_user_id, receiver_user_id, amount, from_currency, to_currency, transaction_id):
         self.sender_user_id = sender_user_id
@@ -82,7 +82,7 @@ class Transaction(BaseModel):
 
                 cursor.execute(
                     """
-                    INSERT INTO transactions (user_id, user_email, from_currency, to_currency, amount, transaction_id)
+                    INSERT INTO transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """,
                     (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
@@ -207,6 +207,9 @@ class Transaction(BaseModel):
             cursor = connection.cursor()
 
             connection.autocommit = False
+
+            # supposed to add a url endpoint to connect with the accounts in payments service
+            account_url =f'https://xxxxxxxxxxxxxxxxxxxxxxx'
 
             # Check wallet balance
             cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id,))

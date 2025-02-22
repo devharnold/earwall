@@ -20,7 +20,7 @@ import bcrypt
 from web3 import HTTPProvider
 
 
-class User(BaseModel):
+class User:
     """Representation of a user model"""
     def __init__(self, user_id, first_name, last_name, user_email, paypal_id, paypal_email, password):
         self.user_id = str(uuid.uuid4())[:8]
@@ -150,46 +150,46 @@ class ValidatePaypalId:
         """Initialize paypal configuration"""
         self.config = self.PaypalConfig(client_id, client_secret, mode)
 
-    def verify_paypal_id(self, paypal_email: str, amount: str = "0.01", currency: str = "USD") -> bool:
-        """Verify if the given paypal email is valid by trying to send a small test payment
-        params:
-            paypal_email: user's paypal email
-            amount: The amount to use for validation, default is ("0.01")
-            currency: The currency to use for the payment, default is ("USD")
-            return: True if email is valid, false otherwise
-        """
-        try:
-            payment = payment({
-                "intent": "sale",
-                "payer": {
-                    "payment_method": "paypal"
-                },
-                "transactions": [{
-                    "amount": {
-                        "total": amount,
-                        "currency": currency
-                    },
-                    "payee": {
-                        "email": paypal_email
-                    },
-                    "description": "Paypal email verification"
-                }],
-                "redirect_urls": {
-                    "return_url": "http://localhost:3000/payment/success",
-                    "cancel_url": "http://localhost:3000/payment/cancel"
-                }
-            })
-            
-            if payment.create():
-                logging.info("Payment created successfully")
-                return True
-            else:
-                logging.error(f"Payment failed: {payment.error}")
-                return False
-            
-        except Exception as e:
-            logging.error(f"Error verifying paypalID: {e}")
-            return False
+    #def verify_paypal_id(self, paypal_email: str, amount: str = "0.01", currency: str = "USD") -> bool:
+    #    """Verify if the given paypal email is valid by trying to send a small test payment
+    #    params:
+    #        paypal_email: user's paypal email
+    #        amount: The amount to use for validation, default is ("0.01")
+    #        currency: The currency to use for the payment, default is ("USD")
+    #        return: True if email is valid, false otherwise
+    #    """
+    #    try:
+    #        payment = payment({
+    #            "intent": "sale",
+    #            "payer": {
+    #                "payment_method": "paypal"
+    #            },
+    #            "transactions": [{
+    #                "amount": {
+    #                    "total": amount,
+    #                    "currency": currency
+    #                },
+    #                "payee": {
+    #                    "email": paypal_email
+    #                },
+    #                "description": "Paypal email verification"
+    #            }],
+    #            "redirect_urls": {
+    #                "return_url": "http://localhost:3000/payment/success",
+    #                "cancel_url": "http://localhost:3000/payment/cancel"
+    #            }
+    #        })
+    #        
+    #        if payment.create():
+    #            logging.info("Payment created successfully")
+    #            return True
+    #        else:
+    #            logging.error(f"Payment failed: {payment.error}")
+    #            return False
+    #        
+    #    except Exception as e:
+    #        logging.error(f"Error verifying paypalID: {e}")
+    #        return False
         
     def consume_notifications():
         """Kafka consumer function to consume paypal config notifications"""

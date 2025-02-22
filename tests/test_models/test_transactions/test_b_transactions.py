@@ -6,7 +6,6 @@ from models.transactions.batch_transaction import BatchTransaction
 import pep8
 import inspect
 
-
 class TestBatchTransactionDocs:
     """Tests to check for the doc style of batch transaction class"""
     @classmethod

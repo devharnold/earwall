@@ -32,7 +32,7 @@ transactionsMappings = {
 RGJSONWriteThrough(keysPrefix='__', mappings=transactionsMappings)
 
 
-class BatchTransaction(BaseModel):
+class BatchTransaction:
     """Batch Transaction Model"""
     def __init__(self, sender_user_id, recievers, from_currency, to_currency, transaction_id, amount):
         self.sender_user_id = sender_user_id

@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 @app_views.route('/b_transaction', methods=['POST'], strict_slashes=False)
 def process_transaction():
-    """Route to start processing the batch transaction"""
+    """Route to processing the batch transaction activity"""
     data = request.json()
     batch_transaction = BatchTransaction(
         data['sender_user_id'],

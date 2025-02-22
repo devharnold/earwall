@@ -1,11 +1,16 @@
 from flask import request, jsonify
 import paypalrestsdk
+import dotenv
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class PaypalConfig:
     paypalrestsdk.configure({
     "mode": "sandbox",
-    "client_id": "YOUR_CLIENT_ID",
-    "client_secret": "YOUR_CLIENT_SECRET"
+    "client_id": os.getenv("PAYPAL_CLIENT_ID"),
+    "client_secret": os.getenv("PAYPAL_CLIENT_SECRET")
     })
 
     def create_payment(amount, currency, recipient_email):

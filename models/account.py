@@ -15,7 +15,7 @@ from engine.db_storage import get_db_connection
 from flask import request, jsonify
 
 
-class Account(BaseModel):
+class Account:
     """Representation of an account model"""
     def __init__(self, user_id, account_id, balance, currency, password):
         self.user_id = user_id

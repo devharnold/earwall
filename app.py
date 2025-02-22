@@ -3,7 +3,7 @@ from flask import Flask, jsonify
 import os
 import psycopg2
 from dotenv import load_dotenv
-from engine.db_storage import get_db_connection
+from engine.db_storage import get_db_connection, create_audit_logs_table, create_cashwallet_table, create_fraud_detection_table, create_user_accounts_table, create_users_table, create_transactions_table
 
 load_dotenv()
 DB_NAME = os.getenv('DB_NAME')
@@ -26,6 +26,14 @@ def home():
 
     #execute a raw sql query
     cursor.execute('SELECT version();')
+    cursor.execute(
+        create_audit_logs_table,
+        create_users_table,
+        create_user_accounts_table,
+        create_cashwallet_table,
+        create_fraud_detection_table,
+        create_transactions_table
+    )
 
     db_version = cursor.fetchone()
 

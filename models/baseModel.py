@@ -9,6 +9,7 @@ import models
 import os
 from os import getenv
 from dotenv import load_dotenv
+from engine.db_storage import get_db_connection
 
 load_dotenv()
 
@@ -40,19 +41,19 @@ class BaseModel:
     def save(self):
         """Saves instance to the database"""
         self.updated_at = datetime.utcnow()
-        conn = self.get_db_connection()
-        cur = conn.cursor()
+        connection = self.get_db_connection()
+        cursor = connection.cursor()
 
-        cur.execute("""
+        cursor.execute("""
             INSERT INTO models (id, created_at, updated_at)
             VALUES (%s, %s, %s)
             ON CONFLICT (id) DO UPDATE
             SET updated_at = EXCLUDED.updated_at;
         """, (self.id, self.created_at, self.updated_at))
 
-        conn.commit()
-        cur.close()
-        conn.close()
+        connection.commit()
+        cursor.close()
+        connection.close()
 
     def to_dict(self):
         """Return a dictionary containing all keys/values of the instance"""
@@ -66,15 +67,15 @@ class BaseModel:
     
     def delete(self):
         """Delete the current instance from the database"""
-        conn = self.get_db_connection()
-        cur = conn.cursor()
+        connection = self.get_db_connection()
+        cursor = connection.cursor()
         
         # Implement logic to delete instance
-        cur.execute("DELETE FROM models WHERE id = %s;", (self.id,))
+        cursor.execute("DELETE FROM models WHERE id = %s;", (self.id,))
         
-        conn.commit()
-        cur.close()
-        conn.close()
+        connection.commit()
+        cursor.close()
+        connection.close()
 
     @staticmethod
     def get_db_connection():

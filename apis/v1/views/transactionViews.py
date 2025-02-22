@@ -1,5 +1,6 @@
 from models.transactions.transaction import Transaction
 import os
+import dotenv
 from dotenv import load_dotenv
 from engine.db_storage import get_db_connection
 from apis.v1.views import app_views
@@ -10,7 +11,7 @@ app = Flask(__name__)
 
 @app_views.route('/transaction', methods=['POST'], strict_slashes=False)
 def process_transaction():
-    """Route to initiate the transaction process"""
+    """initiate the transaction process"""
     data = request.json()
     transaction = Transaction(
         data['sender_user_id'],
@@ -29,7 +30,7 @@ def process_transaction():
     
 @app_views.route('/transaction', methods=['GET'], strict_slashes=False)
 def view_transaction_history():
-    """Route to fetch transactions done by the user"""
+    """fetch transactions done by the user"""
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
