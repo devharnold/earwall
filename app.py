@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 from flask import Flask, jsonify
 import os
-from engine.db_storage import get_db_connection, create_audit_logs_table, create_cashwallet_table, create_fraud_detection_table, create_user_accounts_table, create_users_table, create_transactions_table
+from engine.db_storage import (
+    get_db_connection,
+    create_accounts_table,
+    create_cashwallets_table,
+    create_transactions_table,
+    #create_users_table,
+    create_fraud_detection_table,
+)
 
 app = Flask(__name__)
 
@@ -9,18 +16,18 @@ app = Flask(__name__)
 def startApp():
     return (f"Hello World!")
 
+@app.route("/")
 def create_tables():
     """ Function to create db tables if they don't exist """
     connection = get_db_connection()
     cursor = connection.cursor()
 
     try:
-        cursor.execute(create_audit_logs_table)
-        cursor.execute(create_cashwallet_table)
-        cursor.execute(create_fraud_detection_table)
-        cursor.execute(create_transactions_table)
-        cursor.execute(create_users_table)
-        cursor.execute(create_user_accounts_table)
+        cursor.execute(create_accounts_table())
+        cursor.execute(create_cashwallets_table())
+        cursor.execute(create_transactions_table())
+        #cursor.execute(create_users_table())
+        cursor.execute(create_fraud_detection_table())
 
         connection.commit()
         print("Tables created successfully!")
@@ -52,5 +59,4 @@ def home():
 
 if __name__ == "__main__":
     create_tables()
-    get_db_connection()
     app.run(debug=True)

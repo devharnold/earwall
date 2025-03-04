@@ -1,10 +1,11 @@
 """Batch Transaction model class"""
+"""Methods like get_exchange_rates are to be used for internal transactions."""
 
 import os
 from flask import jsonify
 from models.baseModel import BaseModel
-from rgsync import RGJSONWriteBehind, RGJSONWriteThrough
-from rgsync.Connectors import PostgresConnector, PostgresConnection
+#from rgsync import RGJSONWriteBehind, RGJSONWriteThrough
+#from rgsync.Connectors import PostgresConnector, PostgresConnection
 from kafka import KafkaProducer, KafkaClient
 import uuid
 import random
@@ -15,11 +16,6 @@ from engine.db_storage import get_db_connection
 from dotenv import load_dotenv
 load_dotenv()
 
-connection = PostgresConnection('root', 'password', 'host')
-
-'''Create postgres transactions connector'''
-transactionsConnector = PostgresConnector(connection, 'transactions', 'id')
-
 transactionsMappings = {
     'sender_user_id': 'sender_user_id',
     'reciever_user_id': 'receiver_user_id',
@@ -28,8 +24,7 @@ transactionsMappings = {
     'cashwallet_id': 'cashwallet_id',
     'amount': 'amount',
 }
-
-RGJSONWriteThrough(keysPrefix='__', mappings=transactionsMappings)
+#RGJSONWriteThrough(keysPrefix='__', mappings=transactionsMappings)
 
 
 class BatchTransaction:
