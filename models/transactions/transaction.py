@@ -11,6 +11,7 @@ import os
 from flask import jsonify
 import random
 import string
+import asyncio
 import uuid
 import requests
 from decimal import Decimal
@@ -30,17 +31,18 @@ class Transaction:
         self.transaction_id = self.generate_transaction_id()
 
     @classmethod
-    def process_p2p_transaction(cls, transaction):
+    def process_p2p_transaction(cls, transactions):
         """Initiates a transaction between two users in a P2P EFT service with currency conversion."""
-        available_currencies = ["GBP", "USD", "KES"]
+        available_currencies = {"GBP", "USD", "KES"}
 
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
-            connection.autocommit = False
+            connection.autocommit = False  # Explicitly start transaction
 
             result = []
-            for transaction in transaction:
+
+            for transaction in transactions:
                 sender_user_id = transaction['sender_user_id']
                 receiver_user_id = transaction['receiver_user_id']
                 from_currency = transaction['from_currency']
@@ -48,15 +50,18 @@ class Transaction:
                 amount = transaction['amount']
                 transaction_id = transaction['transaction_id']
 
+                # Validate amount
                 if amount <= 0:
                     result.append({"transaction_id": transaction_id, "status": "Incomplete! Cannot transfer 0 funds"})
                     continue
 
+                # Validate currencies
                 if from_currency not in available_currencies or to_currency not in available_currencies:
                     result.append({"transaction_id": transaction_id, "status": "Currency not available!"})
                     continue
 
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_user_id))
+                # Check sender's balance
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_user_id,))
                 sender_data = cursor.fetchone()
                 if not sender_data:
                     result.append({"transaction_id": transaction_id, "status": "Sender wallet not found"})
@@ -67,19 +72,26 @@ class Transaction:
                     result.append({"transaction_id": transaction_id, "status": "Insufficient funds in your wallet"})
                     continue
 
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id))
+                # Check receiver's wallet
+                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id,))
                 receiver_data = cursor.fetchone()
                 if not receiver_data:
                     result.append({"transaction_id": transaction_id, "status": "Receiver wallet not found!"})
                     continue
 
-                while sender_user_id:
-                    EmailTransactionService.send_sent_funds()
-                    continue
+                # Deduct from sender
+                cursor.execute(
+                    "UPDATE cashwallets SET balance = balance - %s WHERE cashwallet_id = %s",
+                    (amount, sender_user_id)
+                )
 
-                while receiver_user_id:
-                    EmailTransactionService.send_received_funds()
+                # Add to receiver
+                cursor.execute(
+                    "UPDATE cashwallets SET balance = balance + %s WHERE cashwallet_id = %s",
+                    (amount, receiver_user_id)
+                )
 
+                # Log transaction
                 cursor.execute(
                     """
                     INSERT INTO transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
@@ -87,16 +99,25 @@ class Transaction:
                     """,
                     (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
                 )
+
+                # Send email notifications
+                EmailTransactionService.send_sent_funds()
+                EmailTransactionService.send_received_funds()
+
                 result.append({"transaction_id": transaction_id, "status": "Transaction Complete"})
 
+            # Commit transaction
             connection.commit()
             return result
+
         except Exception as e:
             connection.rollback()
             return jsonify({"error": "Transaction failed", "message": str(e)}), 500
+
         finally:
-            connection.close()
             cursor.close()
+            connection.close()
+
 
     @classmethod
     def fetch_transaction_data(cls, sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id):
@@ -148,6 +169,7 @@ class Transaction:
     @classmethod
     def get_exchange_rate(cls, from_currency: str, to_currency: str) -> float:
         """Fetches exchange rate between two currencies."""
+        """This exchange rate function only works for internal transactions: transactions within the app."""
         url = f"https://api.exchangerate-api.com/v4/latest/{from_currency}"
         response = requests.get(url)
         data = response.json()
@@ -170,11 +192,8 @@ class Transaction:
 
             connection.autocommit = False
 
-            # Check account balance
-            cursor.execute("SELECT balance FROM accounts WHERE user_account_id = %s", (user_account_id,))
-            account_balance = cursor.fetchone()
-            if not account_balance or Decimal(account_balance[0]) < amount:
-                return jsonify({"error": "Insufficient funds in account!"}), 400
+            # Fetch the account url endpoint and check the balance, if the balance is less than amount
+            # therefore reject the transaction. Do not bypass
 
             # Update account and wallet balances
             cursor.execute("UPDATE accounts SET balance = balance - %s WHERE user_account_id = %s", (amount, user_account_id))
@@ -209,7 +228,6 @@ class Transaction:
             connection.autocommit = False
 
             # supposed to add a url endpoint to connect with the accounts in payments service
-            account_url =f'https://xxxxxxxxxxxxxxxxxxxxxxx'
 
             # Check wallet balance
             cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id,))

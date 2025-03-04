@@ -57,7 +57,6 @@ class CashWallet(BaseModel):
             if connection:
                 connection.close()
 
-    
 
     @classmethod
     def fetch_wallet_data(cls, cashwallet_id):
