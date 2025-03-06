@@ -44,15 +44,15 @@ def withdraw_to_mpesa():
 
         payload = {
             "InitiatorName": "Tarantula",
-            "SecurityCredential": os.getenv("MPESA_SECURITY_CREDENTIAL"),
+            "SecurityCredential": "",
             "CommandID": "BusinessPayment",
             "Amount": amount,
             "PartyA": os.getenv("MPESA_B2C_SHORTCODE"),
             "PartyB": phone,
             "Remarks": "Withdrawal from Tarantula",
-            "QueueTimeOutURL": "https://mydomain.com/b2c/queue",
-            "ResultURL": "https://mydomain.com/b2c/result",
-            "Ocassion": "Wallet withdrawal"
+            "QueueTimeOutURL": "https://tarantula.com/b2c/queue",
+            "ResultURL": "https://tarantula.com/b2c/result",
+            "Ocassion": "Withdraw from wallet"
         }
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
         response = requests.post(b2c_url, json=payload, headers=headers)

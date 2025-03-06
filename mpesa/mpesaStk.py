@@ -53,30 +53,13 @@ headers = {
   'Authorization': 'Bearer u6FbZPSjxZUP3RkiyELcNsAxDkcG'
 }
 payload = {
-    "ShortCode": 600977,
+    "ShortCode": ,
     "ResponseType": "Cancelled",
-    "ConfirmationURL": "https://mydomain.com/confirmation",
-    "ValidationURL": "https://mydomain.com/validation",
+    "ConfirmationURL": "https://tarantula.com/confirmation",
+    "ValidationURL": "https://tarantula.com/validation",
   }
 response = requests.request("POST", 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl', headers = headers, data = payload)
 print(response.text.encode('utf8'))
     
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
-
-
-
-# structure of the confirmation and validation result:
-#  "TransactionType": "Pay Bill",
-#  "TransID":"RKTQDM7W6S",
-#  "TransTime":"20191122063845",
-#  "TransAmount":"10"
-#  "BusinessShortCode": "600638",
-#  "BillRefNumber":"invoice008",
-#  "InvoiceNumber":"",
-#  "OrgAccountBalance":""
-#  "ThirdPartyTransID": "",
-#  "MSISDN":"25470****149",
-#  "FirstName":"John",
-#  "MiddleName":""
-#  "LastName":"Doe"
