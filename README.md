@@ -69,11 +69,11 @@ Here’s a list of essential credentials needed for a user to sign up:
 
 ### **3. Wallet Features**
 
-- **Multi-Currency Support**: Allow users to manage multiple currencies (e.g., USD, EUR, cryptocurrencies).
+- **Multi-Currency Support**: Allow users to manage multiple currencies (e.g., USD, KES).
 - **Transaction History**: Track wallet transactions, including deposits, withdrawals, and transfers.
 - **Balance Management**: Show current balances and manage wallet limits.
 
-### **4. Ethereum Integration**
+### **4. Ethereum Integration(FUTURE PLANS)**
 
 - **Smart Contracts**: Deploy and manage smart contracts for automated transactions and escrow services.
 - **Gas Management**: Estimate and manage Ethereum transaction fees.
@@ -81,7 +81,7 @@ Here’s a list of essential credentials needed for a user to sign up:
 
 ### **5. API Integration**
 
-- **Payment Gateways**: Integrate with fiat payment gateways like Stripe or PayPal.
+- **Payment Gateways**: Integrate with fiat payment gateways like Stripe, PayPal and Mpesa Daraja.
 - **Blockchain Nodes**: Use providers like Infura or Alchemy to connect to Ethereum nodes.
 - **External APIs**: Integrate APIs for exchange rates, identity verification, or transaction monitoring.
 
@@ -105,7 +105,7 @@ PostgreSQL has been selected for its robust feature set, performance, and extens
 ### **How PostgreSQL Fits in the Project**:
 
 - **Digital Wallet System**: Manage user information, wallet balances, and transaction histories.
-- **P2P Payment Platform**: Handle payments, disputes, and escrow services securely.
+- **P2P Payment Platform**: Handle eft(s), disputes, and escrow services securely.
 - **Ethereum Integration**: Store user Ethereum addresses and transaction details.
 
 #### **Installation**:
@@ -134,8 +134,7 @@ pip install psycopg2
 
 ## **Documentation and Support**
 
-- **User Documentation**: Provide user guides and FAQs.
+- **User Documentation**: User guides and FAQs.
 - **Developer Documentation**: Document API endpoints, smart contract functions, and integration guidelines.
-- **Support System**: Set up a user support system for inquiries and issues.
 
 ---
