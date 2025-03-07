@@ -27,17 +27,20 @@ def mpesa_callback():
             cursor.execute("SELECT user_id, balance FROM users WHERE phone_number = %s", (phone,))
             user = cursor.fetchone()
 
-            if user:
+            while user:
+                # create an empty list to add transaction data
+                transaction_data = []
+
                 updated_balance = user[1] + amount
-                cursor.execute("UPDATE users SET balance = %s WHERE user_id = %s", (updated_balance, user[0]))
+                cursor.execute("UPDATE users SET balance = %s WHERE user_id = %S", (updated_balance, user[0]))
                 connection.commit()
                 message = f"Wallet balance updated: New balance = {updated_balance}"
-            else:
-                message = f"User not found. Cannot update wallet"
 
-            cursor.close()
-            connection.close()
-            return jsonify({"Success": True, "message": message})
+                transaction_data.append(updated_balance)
+
+                cursor.close()
+                connection.close()
+                return jsonify({"Success": True, "message": message})
         except Exception as e:
             return jsonify({"Success": False, "message": str(e)}), 500
         

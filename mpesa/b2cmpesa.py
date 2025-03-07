@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from mpesa.mpesaToken import get_mpesa_token
 from engine.db_storage import get_db_connection
+from models.transactions.transaction import Transaction
 
 
 load_dotenv()
@@ -26,18 +27,30 @@ def withdraw_to_mpesa():
         cursor.execute("SELECT user_id, balance FROM users WHERE phone_number = %s", (phone,))
         user = cursor.fetchone()
 
+        # try to find the specific user that wants to withdraw the funds
         if not user:
             return jsonify({"success": False, "message": "User not found"}), 404
         
+        # perform check if the user's balance is less than amount to be withdrawn
         if user[1] < amount:
             return jsonify({"success": False, "message": "Insufficient balance"}), 400
         
-        # Deduct balance before withdrawal
-        updated_balance = user[1] - amount
-        cursor.execute("UPDATE users SET balance = %s WHERE user_id = %s", (updated_balance, user[0]))
-        connection.commit()
-        cursor.close()
-        connection.close()
+        while connection:
+            transaction_data = []
+
+            # deduct balance from the wallet before withdrawal
+            updated_balance = user[1] - amount
+            cursor.execute("UPDATE users SET balance = %s WHERE user_id = %s", (updated_balance, user[0]))
+            transaction_id = Transaction.generate_transaction_id()
+            
+            # afterwards, update the transaction table, insert the records that took place
+            updated_record = user[transaction_data]
+            cursor.execute("UPDATE transactions SET transaction_id, type WHERE user_id = %s", (updated_record, transaction_id, user[0]))
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+            transaction_data.append(updated_balance, updated_record)
 
         b2c_url = "https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest"
         token = get_mpesa_token()

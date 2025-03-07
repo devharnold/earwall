@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Meant to fetch the mpesa authentication token
+
 url = "https://sandbox.safaricom.co.ke/oauth/v1/generate"
 querystring = {"grant_type":"client_credentials"}
 payload = ""

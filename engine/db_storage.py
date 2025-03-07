@@ -150,6 +150,7 @@ def create_transactions_table():
                     amount DECIMAL(20, 2) NOT NULL,
                     source_cwallet_id VARCHAR(10) REFERENCES cashwallets(cwallet_id) ON DELETE SET NULL,
                     destination_cwallet_id VARCHAR(10) REFERENCES cashwallets(cwallet_id) ON DELETE SET NULL,
+                    transaction_type VARCHAR(30) DEFAULT 'P2P-Transfer' NOT NULL CHECK (type IN ('P2P', 'Wallet deposit', 'Wallet withdrawal')),
                     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     description TEXT
                 );
