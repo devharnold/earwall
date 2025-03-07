@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route("/mpesa/stkpush", methods=["POST"])
 def stk_push():
-    """Initiate stk push request to mpesa"""
+    # Initiate push request to mpesa
     data = request.json()
     phone = data.get("phone")
     amount = data.get("amount")
@@ -46,20 +46,19 @@ def stk_push():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-# should put this block of code inside a function
-# for cancelled transactions url
-headers = {
-  'Content-Type': 'application/json',
-  'Authorization': 'Bearer u6FbZPSjxZUP3RkiyELcNsAxDkcG'
-}
-payload = {
-    "ShortCode": ,
-    "ResponseType": "Cancelled",
-    "ConfirmationURL": "https://tarantula.com/confirmation",
-    "ValidationURL": "https://tarantula.com/validation",
-  }
-response = requests.request("POST", 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl', headers = headers, data = payload)
-print(response.text.encode('utf8'))
+
+# headers = {
+#   'Content-Type': 'application/json',
+#   'Authorization': 'Bearer u6FbZPSjxZUP3RkiyELcNsAxDkcG'
+# }
+# payload = {
+#     "ShortCode": ,
+#     "ResponseType": "Cancelled",
+#     "ConfirmationURL": "https://tarantula.com/confirmation",
+#     "ValidationURL": "https://tarantula.com/validation",
+#   }
+# response = requests.request("POST", 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl', headers = headers, data = payload)
+# print(response.text.encode('utf8'))
     
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
