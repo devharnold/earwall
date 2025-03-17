@@ -1,8 +1,10 @@
-from flask import request, jsonify
+from flask import Flask, request, jsonify
 import paypalrestsdk
 import dotenv
 from dotenv import load_dotenv
 import os
+
+app = Flask(__name__)
 
 load_dotenv()
 
@@ -51,3 +53,7 @@ class PaypalConfig:
             return {"message": "Payment Completed"}
         else:
             return {"error": payment.error}
+        
+
+if __name__ == "__main__":
+    app.run(debug=True)

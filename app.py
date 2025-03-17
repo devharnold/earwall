@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from flask import Flask, jsonify
+from linkpaypal import PaypalConfig
 import os
 from engine.db_storage import (
     get_db_connection,
@@ -29,6 +30,10 @@ def create_tables():
     except Exception as e:
         print(f"Error creating tables: Error!")
         connection.rollback()
+
+@app.route("/")
+def connect_paypal():
+    pass
 
 @app.route('/')
 def home():
