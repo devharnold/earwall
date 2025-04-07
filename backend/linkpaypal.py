@@ -6,6 +6,14 @@ import os
 
 app = Flask(__name__)
 
+paypalrestsdk.configure({
+    'mode': 'sandbox',
+    'client_id': 'the-client-id',
+    'client_secret': 'client-secret'
+})
+
+@app.route('/api/link-paypal')
+
 load_dotenv()
 
 class PaypalConfig:

@@ -38,6 +38,9 @@ def get_wallet_data():
 
 #Route to view wallet transactions
 @app_views.route('/cashwallets/balance/', methods=['GET'], strict_slashes=False)
-def get_wallet_balance():
+def get_wallet_balance(cwallet_id):
     try:
-        
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        query = ("SELECT balance FROM cashwallets WHERE id = %s", (cwallet_id))
