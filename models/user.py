@@ -18,8 +18,6 @@ import logging
 import json
 import bcrypt
 
-
-
 class User:
     """Representation of a user model"""
     def __init__(self, user_id, first_name, last_name, user_email, paypal_id, paypal_email, password):

@@ -8,6 +8,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
+#Route to create cashwallet 
 @app_views.route('/cashwallet', methods=['POST'], strict_slashes=False)
 def create_wallet():
     """Route to create a wallet once a user signs up for the platform"""
@@ -24,7 +25,8 @@ def create_wallet():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app_views.route('/cashwallet', methods=['GET'], strict_slashes=False)
+#Route to view detailed cashwallet information
+@app_views.route('/cashwallet/', methods=['GET'], strict_slashes=False)
 def get_wallet_data():
     """Router to fetch wallet details"""
     try:
@@ -33,3 +35,9 @@ def get_wallet_data():
     except Exception as e:
         return jsonify({"error": "Error"}), 500
     
+
+#Route to view wallet transactions
+@app_views.route('/cashwallets/balance/', methods=['GET'], strict_slashes=False)
+def get_wallet_balance():
+    try:
+        

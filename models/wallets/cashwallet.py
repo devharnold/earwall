@@ -92,3 +92,25 @@ class CashWallet(BaseModel):
                 cursor.close()
             if connection:
                 connection.close()
+
+    @classmethod
+    def fetch_wallet_balance(cls, cashwallet_id):
+        """Get wallet balance"""
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+
+            cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id))
+            wallet_data = cursor.fetchone()
+
+            if wallet_data:
+                result = {"balance": wallet_data[0]}
+                return jsonify(result), 200
+            else:
+                return jsonify({"error": "Balance or your wallet isn't found"}), 404
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+        
+        finally:
+            cursor.close()
+            connection.close()
