@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_jwt_extended import (
+    JWTManager, create_access_token,
+    jwt_required, get_jwt_identity
+)
+from linkpaypal import PaypalConfig
 import os
 from engine.db_storage import (
     get_db_connection,
@@ -11,6 +16,7 @@ from engine.db_storage import (
 )
 
 app = Flask(__name__)
+app.config['JWT_SECRET_KEY'] = os.getenv('secret')
 
 @app.route("/")
 def create_tables():
@@ -29,6 +35,10 @@ def create_tables():
     except Exception as e:
         print(f"Error creating tables: Error!")
         connection.rollback()
+
+@app.route("/")
+def connect_paypal():
+    pass
 
 @app.route('/')
 def home():
