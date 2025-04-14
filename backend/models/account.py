@@ -9,9 +9,9 @@ import os
 import random
 from datetime import datetime
 from os import getenv
-from models.user import User
-from models import BaseModel
-from engine.db_storage import get_db_connection
+from backend.models.user import User
+from backend.models import BaseModel
+from backend.engine.db_storage import get_db_connection
 from flask import request, jsonify
 
 

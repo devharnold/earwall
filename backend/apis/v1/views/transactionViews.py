@@ -1,12 +1,12 @@
-from models.transactions.transaction import Transaction
 import os
 import dotenv
 from dotenv import load_dotenv
-from engine.db_storage import get_db_connection
-from apis.v1.views import app_views
 from flask import Flask, jsonify, request
-load_dotenv()
+from backend.apis.v1.views import app_views
+from backend.engine.db_storage import get_db_connection
+from backend.models.transactions.transaction import Transaction
 
+load_dotenv()
 app = Flask(__name__)
 
 @app_views.route('/transaction', methods=['POST'], strict_slashes=False)

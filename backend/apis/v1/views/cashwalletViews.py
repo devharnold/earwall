@@ -1,7 +1,7 @@
 import os
-from models.wallets.cashwallet import CashWallet
-from apis.v1.views import app_views
-from engine.db_storage import get_db_connection
+from backend.models.wallets.cashwallet import CashWallet
+from backend.apis.v1.views import app_views
+from backend.engine.db_storage import get_db_connection
 from flask import Flask, jsonify, request
 from dotenv import load_dotenv
 load_dotenv()

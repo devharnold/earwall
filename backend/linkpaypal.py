@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
+load_dotenv()
 
 paypalrestsdk.configure({
     'mode': 'sandbox',
@@ -13,9 +14,6 @@ paypalrestsdk.configure({
 })
 
 @app.route('/api/link-paypal')
-
-load_dotenv()
-
 class PaypalConfig:
     paypalrestsdk.configure({
     "mode": "sandbox",

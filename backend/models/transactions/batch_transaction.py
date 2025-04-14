@@ -3,7 +3,7 @@
 
 import os
 from flask import jsonify
-from models.baseModel import BaseModel
+from backend.models.baseModel import BaseModel
 #from rgsync import RGJSONWriteBehind, RGJSONWriteThrough
 #from rgsync.Connectors import PostgresConnector, PostgresConnection
 from kafka import KafkaProducer, KafkaClient
@@ -12,7 +12,7 @@ import random
 import string
 import requests
 from decimal import Decimal
-from engine.db_storage import get_db_connection
+from backend.engine.db_storage import get_db_connection
 from dotenv import load_dotenv
 load_dotenv()
 

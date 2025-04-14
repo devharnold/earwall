@@ -2,8 +2,8 @@
 #test cash_wallet file
 
 import pytest
-from models.baseModel import BaseModel
-from models.wallets.cashwallet import CashWallet
+from backend.models.baseModel import BaseModel
+from backend.models.wallets.cashwallet import CashWallet
 import pep8
 from datetime import datetime
 import inspect

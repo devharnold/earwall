@@ -1,9 +1,9 @@
 #Objects that handle all default RESTFul API actions for users
-from models.user import User
+from backend.models.user import User
 import os
 from dotenv import load_dotenv
-from engine.db_storage import get_db_connection
-from apis.v1.views import app_views
+from backend.engine.db_storage import get_db_connection
+from backend.apis.v1.views import app_views
 import jwt
 from cryptography.hazmat.primitives import serialization
 from flask import Flask, abort, jsonify, request, make_response

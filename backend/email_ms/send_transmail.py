@@ -5,8 +5,8 @@ import dotenv
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from models.user import User
-from engine.db_storage import get_db_connection
+from backend.models.user import User
+from backend.engine.db_storage import get_db_connection
 from flask import jsonify
 
 class EmailTransactionService:

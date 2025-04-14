@@ -5,8 +5,8 @@
 import psycopg2
 from psycopg2 import sql
 from models.baseModel import BaseModel
-from models.wallets.cashwallet import CashWallet
-from email_ms.send_transmail import EmailTransactionService
+from backend.models.wallets.cashwallet import CashWallet
+from backend.email_ms.send_transmail import EmailTransactionService
 import os
 from flask import jsonify
 import random
@@ -15,7 +15,7 @@ import asyncio
 import uuid
 import requests
 from decimal import Decimal
-from engine.db_storage import get_db_connection
+from backend.engine.db_storage import get_db_connection
 from dotenv import load_dotenv
 load_dotenv()
 

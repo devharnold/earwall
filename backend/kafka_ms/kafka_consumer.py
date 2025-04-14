@@ -4,7 +4,7 @@
 from kafka import KafkaConsumer
 import json
 import threading
-from email_ms.send_transmail import EmailTransactionService
+from backend.email_ms.send_transmail import EmailTransactionService
 import os
 from dotenv import load_dotenv
 import logging

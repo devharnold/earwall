@@ -1,7 +1,7 @@
 #!usr/bin/env python3
 # test for the user model
-from models.baseModel import BaseModel
-from models.user import User
+from backend.models.baseModel import BaseModel
+from backend.models.user import User
 import pep8
 from datetime import datetime
 import inspect

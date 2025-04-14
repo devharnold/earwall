@@ -6,9 +6,9 @@ import dotenv
 from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from models.user import User
-from engine.db_storage import get_db_connection
-from email_ms.paypal_mail import EmailPaypalInteractions
+from backend.models.user import User
+from backend.engine.db_storage import get_db_connection
+from backend.email_ms.paypal_mail import EmailPaypalInteractions
 from flask import jsonify
 
 class RegularEmailService:

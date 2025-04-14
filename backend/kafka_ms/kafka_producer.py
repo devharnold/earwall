@@ -2,8 +2,8 @@
 """Kafka producer class"""
 
 from kafka import KafkaProducer
-from email_ms.send_transmail import EmailTransactionService
-from email_ms.send_regmail import RegularEmailService
+from backend.email_ms.send_transmail import EmailTransactionService
+from backend.email_ms.send_regmail import RegularEmailService
 import json
 
 class KafkaProducerInstance:

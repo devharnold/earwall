@@ -4,13 +4,13 @@
 import psycopg2
 from psycopg2 import sql
 import os
-from models.account import Account
-from models.user import User
-from models.baseModel import BaseModel
+from backend.models.account import Account
+from backend.models.user import User
+from backend.models.baseModel import BaseModel
 from flask import jsonify, request
 import uuid
 from datetime import datetime, timedelta, timezone
-from engine.db_storage import get_db_connection
+from backend.engine.db_storage import get_db_connection
 
 
 class CashWallet(BaseModel):

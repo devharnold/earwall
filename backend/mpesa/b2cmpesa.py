@@ -3,8 +3,8 @@ import requests
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from mpesa.mpesaToken import get_mpesa_token
-from engine.db_storage import get_db_connection
-from models.transactions.transaction import Transaction
+from backend.engine.db_storage import get_db_connection
+from backend.models.transactions.transaction import Transaction
 
 
 load_dotenv()
