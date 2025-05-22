@@ -1,7 +1,6 @@
 # send transaction mails file
 import smtplib
 import os
-import dotenv
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -29,11 +28,14 @@ class EmailTransactionService:
         smtp_user = os.getenv("SMTP_USER")
         smtp_password = os.getenv("SMTP_PASSWORD")
 
-    def send_email_notification(self, to_email, subject, message_body):
+    def send_email_notification(self, user_email, subject, message_body):
         """boilerplate code to send emails of different topics"""
+        user_email = User.find_user_by_email()
+        if not user_email:
+            print(f"User not found!")
         msg=MIMEMultipart()
         msg['FROM']=self.smtp_user
-        msg['TO']=to_email
+        msg['TO']=user_email
         msg['Subject']=subject
         msg.attach(MIMEText(message_body, "plain"))
 
@@ -41,10 +43,10 @@ class EmailTransactionService:
             with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
                 server.starttls()
                 server.login(self.smtp_user, self.smtp_password)
-                server.sendmail(self.smtp_user, to_email, msg.as_string())
-            print(f"Email successfully sent to {to_email}")
+                server.sendmail(self.smtp_user, user_email, msg.as_string())
+            print(f"Email successfully sent to {user_email}")
         except Exception as e:
-            print(f"Failed to send email to {to_email}: e")
+            print(f"Failed to send email to {user_email}: e")
             raise
 
 
@@ -54,12 +56,7 @@ class EmailTransactionService:
         2. Received funds
     """
 
-    def send_sent_funds(smtp_user, user_id, cashwallet_id, amount, first_name, last_name, to_email, transaction_id):
-        #"""Sends email to the user, confirming about the sent funds and also providing the transaction details"""
-        #subject= "Sent Funds"
-        #message_body= f"Dear Client, \n\nYour transaction of {transaction_details['amount']}has been processed. \n\nThank you!"
-        #email_sender.send_email(to_email, subject, message_body)
-
+    def send_sent_funds(smtp_user, user_email, user_id, wallet_id, amount, first_name, last_name, to_email, transaction_id):
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
@@ -70,13 +67,13 @@ class EmailTransactionService:
             connection.commit()
 
             cursor.execute(
-                "SELECT balance FROM cash_wallets WHERE cashwallet_id=%s", (cashwallet_id)
+                "SELECT balance FROM wallets WHERE wallet_id=%s", (wallet_id)
             )
-            cashwallet_id = cursor.fetchone()
+            wallet_id = cursor.fetchone()
             connection.commit()
 
             cursor.execute(
-                "SELECT transaction_id FROM transactions WHERE cashwallet_id=%s", (cashwallet_id, transaction_id)
+                "SELECT transaction_id FROM transactions WHERE wallet_id=%s", (wallet_id, transaction_id)
             )
 
             subject="Payment Successful"
@@ -90,7 +87,7 @@ class EmailTransactionService:
                 f"Best Regards,\n"
                 f"Tarantula Team."
             )
-            smtp_user.send_email_notification(to_email, subject, message_body)
+            smtp_user.send_email_notification(user_email, subject, message_body)
 
         except Exception as e:
             connection.rollback()
@@ -99,7 +96,7 @@ class EmailTransactionService:
             cursor.close()
             connection.close()
 
-    def send_received_funds(smtp_user, amount, balance, user_id, cashwallet_id, transaction_id, to_email):
+    def send_received_funds(smtp_user, user_email, amount, balance, user_id, wallet_id, transaction_id):
         """function to notify user about received funds"""
         try:
             conn=get_db_connection()
@@ -109,8 +106,8 @@ class EmailTransactionService:
             user_id=cursor.fetchone()
             conn.commit()
 
-            cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id=%s", (cashwallet_id))
-            cashwallet_id=cursor.fetchone()
+            cursor.execute("SELECT balance FROM wallets WHERE wallet_id=%s", (wallet_id))
+            wallet_id=cursor.fetchone()
             conn.commit()
 
             cursor.execute("SELECT amount FROM transactions WHERE transaction_id=%s", (transaction_id))
@@ -129,7 +126,7 @@ class EmailTransactionService:
                 f"Best Regards,\n"
                 f"Tarantula Team"
             )
-            smtp_user.send_email_notification(to_email, subject, message_body)
+            smtp_user.send_email_notification(user_email, subject, message_body)
 
         except Exception as e:
             conn.rollback()
@@ -137,36 +134,3 @@ class EmailTransactionService:
         finally:
             conn.close()
             cursor.close()
-
-    def send_mpesa_app(smtp_user, to_email, user_id, amount, transaction_id, cashwallet_id):
-        """Sends email notification to the user after funds transfer from Mpesa to the app"""
-        try:
-            connection = get_db_connection()
-            cursor = connection.cursor()
-
-            cursor.execute(
-                "SELECT user_id FROM cashwallets WHERE wallet_id=%s" (user_id, cashwallet_id)
-            )
-            user_id=cursor.fetchone()
-            connection.commit()
-
-            cursor.execute(
-                "SELECT amount FROM transactions WHERE transaction_id=%s" (amount, transaction_id)
-            )
-            transaction_id=cursor.fetchone()
-            connection.commit()
-
-            subject="Transaction Alert!"
-            message_body=(
-                f"Dear Client,\n"
-                f"{amount} has been credited to your wallet {cashwallet_id} from mpesa\n\n"
-                f"Tarantula Team."
-            )
-            smtp_user.send_email_notification(to_email, subject, message_body)
-
-        except Exception as e:
-            connection.rollback()
-            return jsonify({"error": str(e)}), 500
-        finally:
-            cursor.close()
-            connection.close()

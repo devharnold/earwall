@@ -47,5 +47,8 @@ def home():
     cursor = connection.cursor
 
 if __name__ == "__main__":
+    topics_map = {
+        topics.WALLET_TRASNFER_TOPIC: "wallet_group"
+    }
     create_tables()
     app.run(debug=True)

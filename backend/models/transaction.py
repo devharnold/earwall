@@ -5,14 +5,12 @@
 import psycopg2
 from psycopg2 import sql
 from models.baseModel import BaseModel
-from backend.models.wallets.cashwallet import CashWallet
+from backend.models.wallet import Wallet
 from backend.email_ms.send_transmail import EmailTransactionService
 import os
 from flask import jsonify
 import random
 import string
-import asyncio
-import uuid
 import requests
 from decimal import Decimal
 from backend.engine.db_storage import get_db_connection
@@ -22,9 +20,9 @@ load_dotenv()
 
 class Transaction:
     """Transaction model"""
-    def __init__(self, sender_user_id, receiver_user_id, amount, from_currency, to_currency, transaction_id):
-        self.sender_user_id = sender_user_id
-        self.receiver_user_id = receiver_user_id
+    def __init__(self, sender_email, receiver_email, amount, from_currency, to_currency, transaction_id):
+        self.sender_email = sender_email
+        self.receiver_email = receiver_email
         self.amount = Decimal(amount)
         self.from_currency = from_currency
         self.to_currency = to_currency
@@ -43,8 +41,8 @@ class Transaction:
             result = []
 
             for transaction in transactions:
-                sender_user_id = transaction['sender_user_id']
-                receiver_user_id = transaction['receiver_user_id']
+                sender_email = transaction['sender_email']
+                receiver_email = transaction['receiver_email']
                 from_currency = transaction['from_currency']
                 to_currency = transaction['to_currency']
                 amount = transaction['amount']
@@ -61,7 +59,7 @@ class Transaction:
                     continue
 
                 # Check sender's balance
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (sender_user_id,))
+                cursor.execute("SELECT balance FROM wallets WHERE cashwallet_id = %s", (sender_email,))
                 sender_data = cursor.fetchone()
                 if not sender_data:
                     result.append({"transaction_id": transaction_id, "status": "Sender wallet not found"})
@@ -73,7 +71,7 @@ class Transaction:
                     continue
 
                 # Check receiver's wallet
-                cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (receiver_user_id,))
+                cursor.execute("SELECT balance FROM wallets WHERE wallet_id = %s", (receiver_email,))
                 receiver_data = cursor.fetchone()
                 if not receiver_data:
                     result.append({"transaction_id": transaction_id, "status": "Receiver wallet not found!"})
@@ -81,28 +79,26 @@ class Transaction:
 
                 # Deduct from sender
                 cursor.execute(
-                    "UPDATE cashwallets SET balance = balance - %s WHERE cashwallet_id = %s",
-                    (amount, sender_user_id)
+                    "UPDATE wallets SET balance = balance - %s WHERE wallet_id = %s",
+                    (amount, sender_email)
                 )
+                EmailTransactionService.send_sent_funds()
 
                 # Add to receiver
                 cursor.execute(
-                    "UPDATE cashwallets SET balance = balance + %s WHERE cashwallet_id = %s",
-                    (amount, receiver_user_id)
+                    "UPDATE wallets SET balance = balance + %s WHERE wallet_id = %s",
+                    (amount, receiver_email)
                 )
+                EmailTransactionService.send_received_funds()
 
                 # Log transaction
                 cursor.execute(
                     """
-                    INSERT INTO transactions (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
+                    INSERT INTO transactions (sender_email, receiver_email, from_currency, to_currency, amount, transaction_id)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """,
-                    (sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id)
+                    (sender_email, receiver_email, from_currency, to_currency, amount, transaction_id)
                 )
-
-                # Send email notifications
-                EmailTransactionService.send_sent_funds()
-                EmailTransactionService.send_received_funds()
 
                 result.append({"transaction_id": transaction_id, "status": "Transaction Complete"})
 
@@ -118,9 +114,73 @@ class Transaction:
             cursor.close()
             connection.close()
 
+    @classmethod
+    def process_batch_transactions(cls, b_transactions):
+        available_currencies = ["GBP", "USD", "KES"]
+
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            connection.autocommit = False
+
+            results = []
+
+            for b_transaction in b_transactions:
+                sender_email = b_transaction['sender_email']
+                receivers = b_transaction['receivers']
+                from_currency = b_transaction['from_currency']
+                to_currency = b_transaction['to_currency']
+                amount = b_transaction['amount']
+                transaction_id = b_transaction['transaction_id']
+
+                while sender_email:
+                    if amount <= 0:
+                        results.append({"transaction_id": transaction_id, "status": " Failed. Insufficient funds"})
+                        continue
+
+                    if from_currency not in available_currencies and to_currency not in available_currencies:
+                        results.append({"transaction_id": transaction_id, "status": "Failed. Currency not available."})
+                        continue
+
+                cursor.execute("SELECT balance FROM wallets WHERE wallet_id = %s", (sender_email,))
+                sender_data = cursor.fetchone()
+                if not sender_data:
+                    results.append({"transaction_id": transaction_id, "status": "Sender wallet not found"})
+                    continue
+
+                sender_balance = sender_data[0]
+                if sender_balance < amount:
+                    results.append({"transaction_id": transaction_id, "status": "Insufficient funds in your wallet"})
+                    continue
+
+                for receiver in receivers:
+                    receiver_email = receiver['receiver_email']
+                    receiver_amount = receiver['amount']
+                    receiver_transaction_id = receiver['transaction_id']
+
+                    cursor.execute(
+                        """
+                        INSERT INTO transactions (sender_email, receiver_email, amount, from_currency, to_currency, transaction_id)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        (sender_email, receiver_email, from_currency, to_currency, amount, transaction_id)
+                    )
+                    sender_balance -= receiver_amount # Deduct the balance from sender's wallet to the receivers' wallets
+                    results.append({"transaction_id": receiver_transaction_id, "status": "Transaction Complete"})
+            
+            connection.commit()
+            return results
+        except Exception as e:
+            connection.rollback()
+            return {"error": "Batch process failed", "message": str(e)}, 500
+        finally:
+            connection.close()
+            cursor.close()
+
+
 
     @classmethod
-    def fetch_transaction_data(cls, sender_user_id, receiver_user_id, from_currency, to_currency, amount, transaction_id):
+    def fetch_transaction_data(cls, sender_email, receiver_email, from_currency, to_currency, amount, transaction_id):
         """Fetch P2P transactions that have been done by a specific user"""
         try:
             connection = get_db_connection()
@@ -129,8 +189,8 @@ class Transaction:
 
             result = []
             for transaction in transaction:
-                sender_user_id = transaction['sender_user_id']
-                receiver_user_id = transaction['receiver_user_id']
+                sender_email = transaction['sender_email']
+                receiver_email = transaction['receiver_email']
                 from_currency = transaction['from_currency']
                 to_currency = transaction['to_currency']
                 amount = transaction['amount']
@@ -182,78 +242,3 @@ class Transaction:
                 raise ValueError(f"Exchange rate not available for {to_currency}")
         else:
             raise ValueError("Failed to fetch exchange rates")
-
-    @classmethod
-    def withdraw_from_account(cls, user_account_id, amount, cashwallet_id):
-        """Withdraw funds from an account to a wallet."""
-        try:
-            connection = get_db_connection()
-            cursor = connection.cursor()
-
-            connection.autocommit = False
-
-            # Fetch the account url endpoint and check the balance, if the balance is less than amount
-            # therefore reject the transaction. Do not bypass
-
-            # Update account and wallet balances
-            cursor.execute("UPDATE accounts SET balance = balance - %s WHERE user_account_id = %s", (amount, user_account_id))
-            cursor.execute("UPDATE cashwallets SET balance = balance + %s WHERE cashwallet_id = %s", (amount, cashwallet_id))
-
-            # Log the transaction
-            cursor.execute(
-                """
-                INSERT INTO transactions (user_account_id, cashwallet_id, amount, transaction_type, status)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (user_account_id, cashwallet_id, amount, 'Withdrawal',)
-            )
-
-            connection.commit()
-            return jsonify({"message": "Withdrawal successful"}), 201
-
-        except Exception as e:
-            connection.rollback()
-            return jsonify({"error": str(e)}), 500
-        finally:
-            cursor.close()
-            connection.close()
-
-    @classmethod
-    def deposit_to_account(cls, amount, user_account_id, cashwallet_id):
-        """Deposit funds from a wallet to an account."""
-        try:
-            connection = get_db_connection()
-            cursor = connection.cursor()
-
-            connection.autocommit = False
-
-            # supposed to add a url endpoint to connect with the accounts in payments service
-
-            # Check wallet balance
-            cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id,))
-            wallet_balance = cursor.fetchone()
-            if not wallet_balance or Decimal(wallet_balance[0]) < amount:
-                return jsonify({"error": "Insufficient funds in wallet!"}), 400
-
-            # Update wallet and account balances
-            cursor.execute("UPDATE cashwallets SET balance = balance - %s WHERE cashwallet_id = %s", (amount, cashwallet_id))
-            cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, user_account_id))
-
-            # Log the transaction
-            cursor.execute(
-                """
-                INSERT INTO transactions (cashwallet_id, account_id, amount, transaction_type, status)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (cashwallet_id, user_account_id, amount, 'Deposit',)
-            )
-
-            connection.commit()
-            return jsonify({"message": "Deposit successful"}), 201
-
-        except Exception as e:
-            connection.rollback()
-            return jsonify({"error": str(e)}), 500
-        finally:
-            cursor.close()
-            connection.close()

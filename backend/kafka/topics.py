@@ -1,0 +1,1 @@
+WALLET_TRANSFER_TOPIC = "wallet_transactions_notifications"

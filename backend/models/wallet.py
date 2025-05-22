@@ -4,25 +4,23 @@
 import psycopg2
 from psycopg2 import sql
 import os
-from backend.models.account import Account
 from backend.models.user import User
 from backend.models.baseModel import BaseModel
 from flask import jsonify, request
 import uuid
-from datetime import datetime, timedelta, timezone
 from backend.engine.db_storage import get_db_connection
 
 
-class CashWallet(BaseModel):
-    def __init__(self, cashwallet_id, user_id, balance, currency, password):
-        self.cashwallet_id = str(uuid.uuid4())[:8]
+class Wallet(BaseModel):
+    def __init__(self, wallet_id, user_id, balance, currency, password):
+        self.wallet_id = str(uuid.uuid4())[:8]
         self.user_id = user_id
         self.password = User.password()
         self.balance = balance
         self.currency = currency
 
     @classmethod
-    def create_new_wallet(cls, user_id, cashwallet_id, currency, balance=0.00):
+    def create_new_wallet(cls, user_id, wallet_id, currency, balance=0.00):
         """
         Creates a new wallet for the user.
         """
@@ -43,7 +41,7 @@ class CashWallet(BaseModel):
             INSERT INTO cashwallets (user_id, cashwallet_id, currency, balance)
             VALUES (%s, %s, %s, %s)
             """
-            cursor.execute(insert_query, (user_id, cashwallet_id, currency, balance))
+            cursor.execute(insert_query, (user_id, wallet_id, currency, balance))
             connection.commit()
 
             return jsonify({"message": "Wallet created"}), 201
@@ -59,7 +57,7 @@ class CashWallet(BaseModel):
 
 
     @classmethod
-    def fetch_wallet_data(cls, cashwallet_id):
+    def fetch_wallet_data(cls, wallet_id):
         """Method to fetch cash wallet data for a specific user."""
         from flask import jsonify
 
@@ -69,7 +67,7 @@ class CashWallet(BaseModel):
             cursor = connection.cursor()
 
             # SQL query to fetch wallet data
-            cursor.execute("SELECT * FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id))
+            cursor.execute("SELECT * FROM cashwallets WHERE wallet_id = %s", (wallet_id))
             wallet_data = cursor.fetchone()
 
             if wallet_data:
@@ -78,7 +76,7 @@ class CashWallet(BaseModel):
                     "user_id": wallet_data[0],
                     "balance": wallet_data[1],
                     "currency": wallet_data[2],
-                    "cashwallet_id": wallet_data[3]
+                    "wallet_id": wallet_data[3]
                 }
                 return jsonify(result), 200
             else:
@@ -94,13 +92,13 @@ class CashWallet(BaseModel):
                 connection.close()
 
     @classmethod
-    def fetch_wallet_balance(cls, cashwallet_id):
+    def fetch_wallet_balance(cls, wallet_id):
         """Get wallet balance"""
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
 
-            cursor.execute("SELECT balance FROM cashwallets WHERE cashwallet_id = %s", (cashwallet_id))
+            cursor.execute("SELECT balance FROM wallets WHERE wallet_id = %s", (wallet_id))
             wallet_data = cursor.fetchone()
 
             if wallet_data:

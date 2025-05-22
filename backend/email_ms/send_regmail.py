@@ -2,13 +2,11 @@
 
 import os
 import smtplib
-import dotenv
 from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from backend.models.user import User
 from backend.engine.db_storage import get_db_connection
-from backend.email_ms.paypal_mail import EmailPaypalInteractions
 from flask import jsonify
 
 class RegularEmailService:
@@ -31,9 +29,9 @@ class RegularEmailService:
         smtp_user = os.getenv("SMTP_USER")
         smtp_password = os.getenv("SMTP_PASSWORD")
 
-    def send_email_notification(self, user_id, subject, messsage_body):
+    def send_email_notification(self, user_email, user_id, subject, messsage_body):
         """Function to send email notification through the smtp service to a user"""
-        user_email = EmailPaypalInteractions.get_user_email()
+        user_email = User.find_user_by_email()
         if not user_email:
             print(f"Email missing or user with id:{user_id} not found")
         msg=MIMEMultipart()
@@ -53,7 +51,7 @@ class RegularEmailService:
             raise
 
     def send_welcome_mail(smtp_user, user_id, user_email):
-        """Sends a Welcome mail to the user after signing up for our platform"""
+        # Sends a Welcome mail to the user after signing up for our platform
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
@@ -80,7 +78,7 @@ class RegularEmailService:
             connection.close()
 
     def send_password_reset_email(smtp_user, first_name, last_name, user_id, user_email):
-        """Sends an email notification to a user after a password update"""
+        # Sends an email notification to a user after a password update
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
