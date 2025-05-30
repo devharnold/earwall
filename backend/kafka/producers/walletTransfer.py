@@ -18,15 +18,15 @@ class WalletTransactionNotificationProducer:
             "wallet-transfer": "wallet_transactions_notifications",
         }
 
-    def send_update(self, transaction_data, transaction_type):
+    def send_update(self, transaction_data, transaction_id):
         """Sends transaction data to the appropriate kafka topic"""
-        topic = self.kafka_topics.get(transaction_type)
+        topic = self.kafka_topics.get(transaction_id)
         if topic:
             try:
                 self.producer.send(topic, transaction_data)
                 self.producer.flush()
-                print(f"{transaction_type} update sent to Kafka topic '{topic}'.")
+                print(f"{transaction_id} update sent to Kafka topic '{topic}'.")
             except Exception as e:
                 print(f"Error sending to Kafka topic '{topic}': {e}")
         else:
-            print(f"Invalid transaction type: {transaction_type}")
+            print(f"Invalid transaction type: {transaction_id}")

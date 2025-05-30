@@ -42,7 +42,7 @@ def run_wallet_debit_consumer():
                 continue
 
             email_service.send_email(user_email)
-            logging.info(f"[{topic}] Credit email sent to {user_email}")
+            logging.info(f"[{topic}] Debit email sent to {user_email}")
     except Exception as e:
         logging.error(f"[{topic}] Error: {e}")
     finally:

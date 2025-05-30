@@ -32,4 +32,12 @@ def run_wallet_credit_consumer():
             transaction_id = payload.get("transaction_id")
 
             if not user_email or not amount:
-                logging.warning
+                logging.warning(f"Invalid message payload")
+                continue
+
+            email_service.send_email(user_email)
+            logging.info(f"[{topic}] Credit email sent to {user_email}")
+    except Exception as e:
+        logging.error(f"[{topic}] Error: {e}")
+    finally:
+        consumer.close()

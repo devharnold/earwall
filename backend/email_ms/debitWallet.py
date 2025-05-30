@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from backend.models.user import User
+from backend.mpesa.b2cmpesa import withdraw_to_mpesa
 from backend.engine.db_storage import get_db_connection
 from flask import jsonify
 
