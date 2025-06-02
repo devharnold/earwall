@@ -12,7 +12,6 @@ from engine.db_storage import (
     create_accounts_table,
     create_cashwallets_table,
     create_transactions_table,
-    create_fraud_detection_table
 )
 
 app = Flask(__name__)
