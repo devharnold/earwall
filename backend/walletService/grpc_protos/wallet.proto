@@ -1,0 +1,21 @@
+// wallet protobuf file
+
+syntax = "proto3"
+
+package wallet;
+
+service WalletService {
+    rpc GetWalletBalance (UserRequest) returns (UserResponse);
+    rpc CreateWallet (CreateWalletRequest) returns (WalletResponse);
+}
+
+message CreateWalletRequest {
+    int32 user_id=1;
+}
+
+message WalletResponse {
+    int32 wallet_id = 1;
+    int32 user_id = 2;
+    string currency;
+    float balance;
+}

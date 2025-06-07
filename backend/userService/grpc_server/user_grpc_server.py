@@ -1,6 +1,6 @@
 import grpc
 from concurrent import futures
-#from grpc_protos import user_pb2_grpc
+from grpc_protos import user_pb2_grpc
 from grpc_server.userServiceimpl import UserService
 
 def serve():
