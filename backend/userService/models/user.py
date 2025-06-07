@@ -70,21 +70,35 @@ class User:
         hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 16)
         return salt, hashed_password
     
-    @classmethod
-    def find_user_by_email(cls, email):
+    def find_user_by_email(email):
+        connection  = get_db_connection()
+        with connection.cursor() as cursor:
+            query = "SELECT * FROM users WHERE email = %s"
+            cursor.execute(query, email())
+            result = cursor.fetchone()
+            if result:
+                return {
+                    "first_name": result['first_name'],
+                    "last_name": result['last_name'],
+                    "email": result['email'],
+                    "wallet_id": result['wallet_id']
+                }
+            return None
+        
+    def find_user_by_id(user_id):
         connection = get_db_connection()
-        with connection:
-            with connection.cursor() as cursor:
-                query = "SELECT * FROM users WHERE email = %s"
-                cursor.execute(query, (email))
-                result = cursor.fetchone()
-                if result:
-                    return cls(
-                        first_name=result['first_name'],
-                        last_name=result['last_name'],
-                        user_email=result['user_email']
-                    )
-                return None
+        with connection.cursor() as cursor:
+            query = "SELECT * FROM users WHERE user_id = %s"
+            cursor.execute(query, user_id())
+            result = cursor.fetchone()
+            if result:
+                return {
+                    "first_name": result['first_name'],
+                    "last_name": result['last_name'],
+                    "email": result['email'],
+                    "wallet_id": result['wallet_id']
+                }
+            return None
             
     def verify_password(self, password):
         return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))

@@ -5,5 +5,5 @@ def get_wallet_balance(user_id):
     with grpc.insecure_channel('localhost:50052') as channel:
         stub = wallet_pb2_grpc.WalletServiceStub(channel)
         request = wallet_pb2.WalletRequest(user_id=user_id)
-        response = stub.GetBalance(request)
+        response = stub.GetWalletBalance(request)
         return response.balance
