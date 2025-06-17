@@ -26,23 +26,37 @@ def create_wallet():
         return jsonify({"error": str(e)}), 500
 
 #Route to view detailed cashwallet information
-@app_views.route('/wallet/<int:wallet_id>', methods=['GET'])
-def get_wallet_data():
+@app_views.route('/<int:wallet_id>/wallet', methods=['GET'])
+def get_wallet_data(wallet_id):
     """Router to fetch wallet details"""
     try:
-        wallet = Wallet.fetch_wallet_data()
+        wallet = Wallet.fetch_wallet_data(wallet_id)
         if wallet:
             return jsonify({
                 "user_id": wallet.user_id,
+                "wallet_id": wallet.wallet_id,
                 "balance": wallet.balance,
-                "currency": wallet.currency,
-                "wallet_id": wallet.wallet_id
+                "currency": wallet.currency
             }), 200
         else:
             return jsonify({"error": "Wallet not found"}), 404
     except Exception as e:
         return jsonify({"error": {e}}), 500
 
-    except Exception as e:
-        return jsonify({"error": "Error"}), 500
     
+# Route to view balance
+@app_views.route('/<int:wallet_id>/wallet', methods=['GET'])
+def get_wallet_balance(wallet_id):
+    try:
+        wallet = Wallet.fetch_wallet_balance(wallet_id)
+        if wallet:
+            return jsonify({
+                "user_id": wallet.user_id,
+                "wallet_id": wallet.wallet_id,
+                "balance": wallet.balance,
+                "currency": wallet.currency
+            }), 200
+        else:
+            return jsonify({"error": "Balance not found!"}), 404
+    except Exception as e:
+        return jsonify({"error": {e}}), 500

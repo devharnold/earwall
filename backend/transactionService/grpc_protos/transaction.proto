@@ -1,0 +1,13 @@
+// transaction protobuf file
+
+syntax = "proto3";
+
+package transaction;
+
+service TransactionService {
+    rpc GetTransaction (TransactionRequest) returns (TransactionResponse);
+}
+
+message TransactionRequest {
+    int32 transaction_id = 1;
+}
