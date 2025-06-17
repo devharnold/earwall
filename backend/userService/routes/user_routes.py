@@ -22,16 +22,16 @@ def register_user():
             return jsonify({"error": str(e)}), 500
 
 # Get user wallet
-@app_views.route('/<int:user_id>/wallet', methods=['GET'])
-def get_user_wallet(user_id):
-    try:
-        balance = get_wallet_balance(user_id)
-        return jsonify({
-            "user_id": user_id,
-            "balance": balance
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#@app_views.route('/<int:user_id>/wallet', methods=['GET'])
+#def get_user_wallet(user_id):
+#    try:
+#        wallet = get_wallet(user_id)
+#        return jsonify({
+#            "user_id": user_id,
+#            "wallet_id": wallet_id
+#        }), 200
+#    except Exception as e:
+#        return jsonify({"error": str(e)}), 500
 
 # Get user by email
 @app_views.route('/email/<email>', methods=['GET'], strict_slashes=False)

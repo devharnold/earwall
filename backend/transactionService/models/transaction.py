@@ -28,7 +28,6 @@ class Transaction:
         self.to_currency = to_currency
         self.transaction_id = self.generate_transaction_id()
 
-    @classmethod
     def process_p2p_transaction(cls, transactions):
         """Initiates a transaction between two users in a P2P EFT service with currency conversion."""
         available_currencies = {"GBP", "USD", "KES"}
@@ -114,8 +113,8 @@ class Transaction:
             cursor.close()
             connection.close()
 
-    @classmethod
-    def process_batch_transactions(cls, b_transactions):
+    
+    def process_batch_transactions(b_transactions):
         available_currencies = ["GBP", "USD", "KES"]
 
         try:
@@ -178,9 +177,7 @@ class Transaction:
             cursor.close()
 
 
-
-    @classmethod
-    def fetch_transaction_data(cls, sender_email, receiver_email, from_currency, to_currency, amount, transaction_id):
+    def fetch_transaction_data(sender_email, receiver_email, from_currency, to_currency, amount, transaction_id):
         """Fetch P2P transactions that have been done by a specific user"""
         try:
             connection = get_db_connection()
@@ -211,8 +208,8 @@ class Transaction:
             connection.close()
             cursor.close()
 
-    
-    def generate_transaction_id():
+    @classmethod
+    def generate_transaction_id(cls):
         characters = string.ascii_uppercase + string.digits
         return ''.join(random.choices(characters, k=10))
 
