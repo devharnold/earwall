@@ -1,3 +1,4 @@
+import grpc
 from userService.models.user import User
 from grpc_protos import user_pb2, user_pb2_grpc
 from backend.engine.db_storage import get_db_connection
@@ -21,7 +22,7 @@ class UserService(user_pb2_grpc.UserServiceServicer):
                 email=user.email
             )
         
-        except Exception as e:
+        except grpc.RpcError as e:
             context.set_details(str(e))
             context.set_code(13)
             return user_pb2.UserResponse()

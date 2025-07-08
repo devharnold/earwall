@@ -4,7 +4,7 @@
 import psycopg2
 from psycopg2 import sql
 import os
-from backend.models.user import User
+from backend.userService.models.user import User
 from backend.models.baseModel import BaseModel
 from flask import jsonify, request
 import uuid

@@ -4,10 +4,35 @@ syntax = "proto3";
 
 package transaction;
 
+import "google/protobuf/timestamp.proto";
+
 service TransactionService {
     rpc GetTransaction (TransactionRequest) returns (TransactionResponse);
+
+    rpc CreateTransaction(NewTransactionRequest) returns (TransactionResponse);
 }
 
 message TransactionRequest {
     int32 transaction_id = 1;
+}
+
+message NewTransactionRequest {
+    string sender_email = 1;
+    string receiver_email = 2;
+    string from_currency = 3;
+    string to_currency = 4;
+    float amount = 5;
+    google.protobuf.Timestamp created_at = 6
+}
+
+message TransactionResponse {
+  int64 transaction_id = 1;
+  string sender_email = 2;
+  string receiver_email = 3;
+  string from_currency = 4;
+  string to_currency = 5;
+  double amount = 6;
+  google.protobuf.Timestamp created_at = 7;
+  string status = 8;
+  string message = 9;
 }

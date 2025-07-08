@@ -13,6 +13,7 @@ import random
 import string
 import requests
 from decimal import Decimal
+from datetime import datetime
 from backend.engine.db_storage import get_db_connection
 from dotenv import load_dotenv
 load_dotenv()
@@ -20,12 +21,13 @@ load_dotenv()
 
 class Transaction:
     """Transaction model"""
-    def __init__(self, sender_email, receiver_email, amount, from_currency, to_currency, transaction_id):
+    def __init__(self, sender_email, receiver_email, amount, from_currency, to_currency, created_at, transaction_id):
         self.sender_email = sender_email
         self.receiver_email = receiver_email
-        self.amount = Decimal(amount)
         self.from_currency = from_currency
         self.to_currency = to_currency
+        self.amount = Decimal(amount)
+        self.created_at = datetime(created_at)
         self.transaction_id = self.generate_transaction_id()
 
     def process_p2p_transaction(cls, transactions):
@@ -45,6 +47,7 @@ class Transaction:
                 from_currency = transaction['from_currency']
                 to_currency = transaction['to_currency']
                 amount = transaction['amount']
+                created_at = transaction['created_at']
                 transaction_id = transaction['transaction_id']
 
                 # Validate amount
