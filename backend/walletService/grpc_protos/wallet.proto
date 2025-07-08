@@ -6,11 +6,29 @@ package wallet;
 
 service WalletService {
     rpc GetWalletBalance (UserRequest) returns (UserResponse);
+    rpc GetBalance (BalanceRequest) returns (BalanceResponse);
+    rpc TransferFunds(TransferRequest) returns (TransferResponse);
     rpc CreateWallet (CreateWalletRequest) returns (WalletResponse);
 }
 
 message CreateWalletRequest {
     int32 user_id=1;
+}
+
+message BalanceResponse {
+    float balance = 1;
+}
+
+message TransferRequest {
+    string sender_email = 1;
+    string to_email = 2;
+    float amount = 3;
+    string transaction_id = 4;
+}
+
+message TransferResponse {
+    bool success = 1;
+    string message = 2;
 }
 
 message WalletResponse {

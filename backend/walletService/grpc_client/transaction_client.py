@@ -1,5 +1,5 @@
 import grpc
-from grpc_client import transaction_pb2, transaction_pb2_grpc
+from transactionService.grpc_protos import transaction_pb2, transaction_pb2_grpc
 
 def get_transactions(wallet_id):
     with grpc.insecure_channel('loacalhost:50053') as channel:

@@ -1,3 +1,4 @@
+import grpc
 from transactionService.models.transaction import Transaction
 from grpc_protos import transaction_pb2, transaction_pb2_grpc
 from backend.engine.db_storage import get_db_connection
@@ -21,7 +22,7 @@ class TransactionService(transaction_pb2_grpc.TransactionServiceServicer):
                 amount=transaction.amount
             )
         
-        except Exception as e:
+        except grpc.RpcError as e:
             context.set_details(str(e))
             context.set_code(13)
             return transaction_pb2.TransactionResponse()
