@@ -8,8 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 service TransactionService {
     rpc GetTransaction (TransactionRequest) returns (TransactionResponse);
-
-    rpc CreateTransaction(NewTransactionRequest) returns (TransactionResponse);
+    rpc MakeTransaction(NewTransactionRequest) returns (TransactionResponse);
 }
 
 message TransactionRequest {

@@ -5,7 +5,6 @@
 import psycopg2
 from psycopg2 import sql
 from models.baseModel import BaseModel
-from backend.models.wallet import Wallet
 from backend.email_ms.send_transmail import EmailTransactionService
 import os
 from flask import jsonify
@@ -179,37 +178,63 @@ class Transaction:
             connection.close()
             cursor.close()
 
-
-    def fetch_transaction_data(sender_email, receiver_email, from_currency, to_currency, amount, transaction_id):
-        """Fetch P2P transactions that have been done by a specific user"""
+    def fetch_transation_history(sender_email, receiver_email, from_currency, to_currency, amount, transaction_id, page=1, page_size=10):
+        # Fetch transaction history, here we will have to paginate this
         try:
             connection = get_db_connection()
             cursor = connection.cursor()
             connection.autocommit = False
 
-            result = []
-            for transaction in transaction:
-                sender_email = transaction['sender_email']
-                receiver_email = transaction['receiver_email']
-                from_currency = transaction['from_currency']
-                to_currency = transaction['to_currency']
-                amount = transaction['amount']
-                transaction_id = transaction['transaction_id']
+            query = "SELECT * FROM transactions WHERE 1=1"
+            params = []
 
-                cursor.execute("SELECT * FROM transactions")
-                transaction_data = cursor.fetchall()
-                if not transaction_data:
-                    result.append({"status": "No transactions found"})
-                    continue
-                
-                connection.commit()
-                return result
+            if sender_email:
+                query += " AND sender_email = %s"
+                params.append(sender_email)
+            if receiver_email:
+                query += " AND receiver_email = %s"
+                params.append(receiver_email)
+            if from_currency:
+                query += " AND from_currency = %s"
+                params.append(from_currency)
+            if to_currency:
+                query += " AND to_currency = %s"
+                params.append(to_currency)
+            if amount:
+                query += " AND amount = %s"
+                params.append(amount)
+            if transaction_id:
+                query += " AND transaction_id = %s"
+                params.append(transaction_id)
+
+            # Pagination: calculate offset
+            offset = (page - 1) * page_size
+            query += " ORDER BY timestamp DESC LIMIT %s OFFSET %s"
+            params.extend([page_size, offset])
+
+            cursor.execute(query, tuple(params))
+            transactions = cursor.fetchall()
+
+            result = []
+            for transaction in transactions:
+                result.append({
+                    "transaction_id": transaction[0],
+                    "sender_email": transaction[1],
+                    "receiver_email": transaction[2],
+                    "from_currency": transaction[3],
+                    "to_currency": transaction[4],
+                    "amount": transaction[5],
+                    "timestamp": transaction[6],
+                })
+
+            return result
         except Exception as e:
-            connection.rollback()
-            return jsonify({"error": str(e)}), 500
+            print(f"Error fetching transaction history: {e}")
+            return []
+        
         finally:
-            connection.close()
             cursor.close()
+            connection.close()
 
     @classmethod
     def generate_transaction_id(cls):
