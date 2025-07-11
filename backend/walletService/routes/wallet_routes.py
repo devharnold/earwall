@@ -1,12 +1,9 @@
-import os
-from walletService.models.wallet import Wallet
-from backend.apis.v1.views import app_views
-from backend.engine.db_storage import get_db_connection
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Blueprint
 from dotenv import load_dotenv
-load_dotenv()
+from walletService.models.wallet import Wallet
+from grpc_client import transaction_client
 
-app = Flask(__name__)
+app_views = Blueprint('app_views', __name__)
 
 #Route to create cashwallet 
 @app_views.route('/', methods=['POST'])
@@ -58,5 +55,20 @@ def get_wallet_balance(wallet_id):
             }), 200
         else:
             return jsonify({"error": "Balance not found!"}), 404
+    except Exception as e:
+        return jsonify({"error": {e}}), 500
+    
+
+#Route to make Transaction
+@app_views.route('<int:wallet_id>/wallet/transact', methods=['POST'])
+def make_transaction(wallet_id):
+    try:
+        wallet = transaction_client.make_transaction(wallet_id)
+        if wallet:
+            return jsonify({
+                "balance": wallet.balance
+            }), 200
+        else:
+            return jsonify({"error": "Transaction failed!"}), 400
     except Exception as e:
         return jsonify({"error": {e}}), 500

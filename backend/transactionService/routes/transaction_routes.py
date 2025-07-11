@@ -1,10 +1,11 @@
 import os
 import dotenv
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
-from backend.apis.v1.views import app_views
+from flask import Flask, jsonify, request, Blueprint
 from backend.engine.db_storage import get_db_connection
 from transactionService.models.transaction import Transaction
+
+app_views = Blueprint('app_views', __name__)
 
 load_dotenv()
 app = Flask(__name__)
@@ -35,7 +36,7 @@ def view_transaction_history():
         connection = get_db_connection()
         cursor = connection.cursor()
 
-        transaction = Transaction.fetch_transaction_data()
+        transaction = Transaction.fetch_transaction_history()
 
         if not transaction:
             return jsonify({"error": "Oops. Transaction not found"})
