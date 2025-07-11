@@ -57,4 +57,21 @@ class TransactionService(transaction_pb2_grpc.TransactionServiceServicer):
         try:
             transaction = Transaction.fetch_transation_history()
 
-            if not transaction 
+            if not transaction:
+                context.set_details("")
+                context.set_code()
+                return transaction_pb2.TransactionResponse()
+            
+            return transaction_pb2.TransactionResponse(
+                transaction_id=transaction.transaction_id,
+                sender_email=transaction.sender_email,
+                receiver_email=transaction.receiver_email,
+                from_currency=transaction.from_currency,
+                to_currency=transaction.to_currency,
+                amount=transaction.amount
+            )
+        
+        except grpc.RpcError as e:
+            context.set_details(str(e))
+            context.set_code(13)
+            return transaction_pb2.TransactionResponse()
