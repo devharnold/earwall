@@ -1,7 +1,7 @@
 import grpc
 from concurrent import futures
-from grpc_protos import transaction_pb2_grpc
-from grpc_server.transactionServiceimpl import TransactionService
+from backend.transactionService.grpc_protos import transaction_pb2_grpc
+from backend.transactionService.grpc_server.transactionServiceimpl import TransactionService
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

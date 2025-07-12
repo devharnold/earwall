@@ -1,6 +1,6 @@
 import grpc
-from transactionService.models.transaction import Transaction
-from grpc_protos import transaction_pb2, transaction_pb2_grpc
+from backend.transactionService.models.transaction import Transaction
+from backend.transactionService.grpc_protos import transaction_pb2, transaction_pb2_grpc
 from backend.engine.db_storage import get_db_connection
 
 class TransactionService(transaction_pb2_grpc.TransactionServiceServicer):
