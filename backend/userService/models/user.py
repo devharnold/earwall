@@ -6,7 +6,7 @@ import hashlib
 import os
 import uuid
 from os import getenv
-from models import BaseModel
+from backend.models import BaseModel
 from backend.email_ms.send_regmail import RegularEmailService
 from backend.engine.db_storage import get_db_connection
 import paypalrestsdk

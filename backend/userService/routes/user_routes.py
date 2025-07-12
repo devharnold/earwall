@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from grpc_client.wallet_client import get_wallet_balance
-from userService.models.user import User
+from backend.userService.grpc_client.wallet_client import get_wallet_balance
+from backend.userService.models.user import User
 
 app_views = Blueprint('app_views', __name__)
 

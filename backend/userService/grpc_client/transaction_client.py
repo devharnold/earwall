@@ -1,5 +1,5 @@
 import grpc
-from transactionService import transaction_pb2, transaction_pb2_grpc
+from backend.transactionService import transaction_pb2, transaction_pb2_grpc
 
 def get_transaction_history(user_id):
     with grpc.insecure_channel('localhost:50053') as channel:

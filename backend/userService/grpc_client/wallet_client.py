@@ -1,5 +1,5 @@
 import grpc
-from walletService.grpc_protos import wallet_pb2, wallet_pb2_grpc
+from backend.walletService.grpc_protos import wallet_pb2, wallet_pb2_grpc
 
 def get_wallet_balance(user_id):
     with grpc.insecure_channel('localhost:50052') as channel:

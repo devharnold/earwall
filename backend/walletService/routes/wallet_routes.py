@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, Blueprint
 from dotenv import load_dotenv
-from walletService.models.wallet import Wallet
-from grpc_client import transaction_client
+from backend.walletService.models.wallet import Wallet
 
 app_views = Blueprint('app_views', __name__)
 
@@ -60,15 +59,15 @@ def get_wallet_balance(wallet_id):
     
 
 #Route to make Transaction
-@app_views.route('<int:wallet_id>/wallet/transact', methods=['POST'])
-def make_transaction(wallet_id):
-    try:
-        wallet = transaction_client.make_transaction(wallet_id)
-        if wallet:
-            return jsonify({
-                "balance": wallet.balance
-            }), 200
-        else:
-            return jsonify({"error": "Transaction failed!"}), 400
-    except Exception as e:
-        return jsonify({"error": {e}}), 500
+#@app_views.route('<int:wallet_id>/wallet/transact', methods=['POST'])
+#def make_transaction(wallet_id):
+#    try:
+#        wallet = transaction_client.make_transaction(wallet_id)
+#        if wallet:
+#            return jsonify({
+#                "balance": wallet.balance
+#            }), 200
+#        else:
+#            return jsonify({"error": "Transaction failed!"}), 400
+#    except Exception as e:
+#        return jsonify({"error": {e}}), 500

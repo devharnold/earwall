@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
-
 """Transaction model class"""
 
 import psycopg2
 from psycopg2 import sql
-from models.baseModel import BaseModel
+from backend.models.baseModel import BaseModel
 from backend.email_ms.send_transmail import EmailTransactionService
 import os
 from flask import jsonify

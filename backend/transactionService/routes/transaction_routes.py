@@ -3,7 +3,7 @@ import dotenv
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, Blueprint
 from backend.engine.db_storage import get_db_connection
-from transactionService.models.transaction import Transaction
+from backend.transactionService.models.transaction import Transaction
 
 app_views = Blueprint('app_views', __name__)
 
