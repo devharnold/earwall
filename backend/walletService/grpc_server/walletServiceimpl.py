@@ -1,6 +1,6 @@
 import grpc
-from walletService.models.wallet import Wallet
-from grpc_protos import wallet_pb2, wallet_pb2_grpc
+from backend.walletService.models.wallet import Wallet
+from backend.walletService.grpc_protos import wallet_pb2, wallet_pb2_grpc
 from backend.engine.db_storage import get_db_connection
 
 class WalletService(wallet_pb2_grpc.WalletServiceServicer):

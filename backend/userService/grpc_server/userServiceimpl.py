@@ -1,6 +1,6 @@
 import grpc
-from userService.models.user import User
-from grpc_protos import user_pb2, user_pb2_grpc
+from backend.userService.models.user import User
+from backend.userService.grpc_protos import user_pb2, user_pb2_grpc
 from backend.engine.db_storage import get_db_connection
 
 class UserService(user_pb2_grpc.UserServiceServicer):
