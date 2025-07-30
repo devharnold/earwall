@@ -7,7 +7,7 @@ def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     transaction_pb2_grpc.add_TransactionServiceServicer_to_Server(TransactionService(), server)
     server.add_insecure_port('[::]:50053')
-    print("Transation server running on port 50053")
+    print("Transaction server running on port 50053")
     server.start()
     server.wait_for_termination()
 

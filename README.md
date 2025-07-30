@@ -1,7 +1,7 @@
-# **EARLWALL**
+# **CAP wallet**
 **Proposed agenda**
 
-This project is focused on building a platform that supports P2P payments, wallet management, and Ethereum integration. The backend uses PostgreSQL for database management, ensuring scalability, security, and performance.
+This project is focused on building a platform that supports P2P transactions, and wallet management.
 
 ---
 
@@ -26,20 +26,16 @@ Here’s a list of essential credentials needed for a user to sign up:
 5. **Phone Number** *(optional but recommended)*
     - **Purpose**: For two-factor authentication (2FA), account recovery, and additional verification.
     - **Validation**: Use SMS verification to confirm the phone number.
-
-6. **Ethereum Wallet Address** *(if applicable)*
-    - **Purpose**: Connect users' Ethereum wallets (e.g., MetaMask) for transactions.
-    - **Security**: Only request the public wallet address, never private keys.
    
-7. **KYC Details** *(optional for compliance)*
+6. **KYC Details** *(optional for compliance)*
     - **Purpose**: For identity verification, if required by financial regulations.
     - **Security**: Securely store and manage compliance with data protection laws.
 
-8. **Country and Date of Birth** *(optional)*
+7. **Country and Date of Birth** *(optional)*
     - **Purpose**: For regulatory purposes like age restrictions or compliance.
     - **Validation**: Ensure compliance with age-related restrictions.
 
-9. **Profile Picture** *(optional)*
+8. **Profile Picture** *(optional)*
     - **Purpose**: Enhance user profile, but not essential for signup.
 
 ---
@@ -73,16 +69,9 @@ Here’s a list of essential credentials needed for a user to sign up:
 - **Transaction History**: Track wallet transactions, including deposits, withdrawals, and transfers.
 - **Balance Management**: Show current balances and manage wallet limits.
 
-### **4. Ethereum Integration(FUTURE PLANS)**
-
-- **Smart Contracts**: Deploy and manage smart contracts for automated transactions and escrow services.
-- **Gas Management**: Estimate and manage Ethereum transaction fees.
-- **Token Management**: Support ERC-20 or ERC-721 tokens for user transfers.
-
-### **5. API Integration**
+### **4. API Integration**
 
 - **Payment Gateways**: Integrate with fiat payment gateways like Stripe, PayPal and Mpesa Daraja.
-- **Blockchain Nodes**: Use providers like Infura or Alchemy to connect to Ethereum nodes.
 - **External APIs**: Integrate APIs for exchange rates, identity verification, or transaction monitoring.
 
 ---
@@ -122,19 +111,5 @@ pip install psycopg2
 
 - **Testing**: Implement unit, integration, and end-to-end tests. Use Ethereum testnets for smart contract testing.
 - **Deployment**: Deploy on cloud platforms with scalability in mind, ensuring secure and efficient operations.
-
----
-
-## **Monitoring and Analytics**
-
-- **Transaction Monitoring**: Implement tools to track transaction activities.
-- **User Analytics**: Collect and analyze data for improving user experience.
-
----
-
-## **Documentation and Support**
-
-- **User Documentation**: User guides and FAQs.
-- **Developer Documentation**: Document API endpoints, smart contract functions, and integration guidelines.
 
 ---
