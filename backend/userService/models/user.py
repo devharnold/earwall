@@ -8,7 +8,7 @@ import uuid
 from os import getenv
 from backend.models import BaseModel
 from backend.email_ms.send_regmail import RegularEmailService
-from backend.engine.db_storage import get_db_connection
+from backend.engine.db_storage import DatabaseManager
 import paypalrestsdk
 import bcrypt
 
@@ -32,7 +32,7 @@ class User:
 
         try:
             # Establish database connection
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
 
             # Begin transaction
@@ -71,7 +71,7 @@ class User:
         return salt, hashed_password
     
     def find_user_by_email(email):
-        connection  = get_db_connection()
+        connection  = DatabaseManager.get_db_connection()
         with connection.cursor() as cursor:
             query = "SELECT * FROM users WHERE email = %s"
             cursor.execute(query, email())
@@ -86,7 +86,7 @@ class User:
             return None
         
     def find_user_by_id(user_id):
-        connection = get_db_connection()
+        connection = DatabaseManager.get_db_connection()
         with connection.cursor() as cursor:
             query = "SELECT * FROM users WHERE user_id = %s"
             cursor.execute(query, user_id())
@@ -105,7 +105,7 @@ class User:
     
     def save(self):
         """Saves a new user to the db"""
-        connection = get_db_connection()
+        connection = DatabaseManager.get_db_connection()
         cursor = connection.cursor()
 
         query = """
@@ -125,7 +125,7 @@ class User:
     @staticmethod
     def update_password(user_email, new_password):
         """Updates the password of an existing user."""
-        connection = get_db_connection()
+        connection = DatabaseManager.get_db_connection()
         cursor = connection.cursor()
 
         hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
@@ -140,18 +140,3 @@ class User:
         finally:
             cursor.close()
             connection.close()
-
-class ValidatePaypalId:
-    """Class that handles user paypal id"""
-    class PaypalConfig:
-        """handles paypal sdk configuration"""
-        def __init__(self, client_id: str, client_secret: str, mode: str = "sandbox"):
-            paypalrestsdk.configure({
-                "mode": mode,
-                "client_id": client_id,
-                "client_secret": client_secret
-            })
-
-    def __init__(self, client_id: str, client_secret: str, mode: str = "sandbox"):
-        """Initialize paypal configuration"""
-        self.config = self.PaypalConfig(client_id, client_secret, mode)

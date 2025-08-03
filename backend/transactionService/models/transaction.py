@@ -11,7 +11,7 @@ import string
 import requests
 from decimal import Decimal
 from datetime import datetime
-from backend.engine.db_storage import get_db_connection
+from backend.engine.db_storage import DatabaseManager
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -27,12 +27,13 @@ class Transaction:
         self.created_at = datetime(created_at)
         self.transaction_id = self.generate_transaction_id()
 
+    @classmethod
     def process_p2p_transaction(cls, transactions):
         """Initiates a transaction between two users in a P2P EFT service with currency conversion."""
         available_currencies = {"GBP", "USD", "KES"}
 
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
             connection.autocommit = False  # Explicitly start transaction
 
@@ -117,7 +118,7 @@ class Transaction:
     def fetch_transaction_history(sender_email, receiver_email, from_currency, to_currency, amount, transaction_id, page=1, page_size=10):
         # Fetch transaction history, here we will have to paginate this
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
             connection.autocommit = False
 

@@ -4,8 +4,8 @@ import os
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from backend.models.user import User
-from backend.engine.db_storage import get_db_connection
+from backend.userService.models.user import User
+from backend.engine.db_storage import DatabaseManager
 from flask import jsonify
 
 class EmailTransactionService:
@@ -58,7 +58,7 @@ class EmailTransactionService:
 
     def send_sent_funds(smtp_user, user_email, user_id, wallet_id, amount, first_name, last_name, to_email, transaction_id):
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
             cursor.execute(
                 "SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id)
@@ -99,20 +99,20 @@ class EmailTransactionService:
     def send_received_funds(smtp_user, user_email, amount, balance, user_id, wallet_id, transaction_id):
         """function to notify user about received funds"""
         try:
-            conn=get_db_connection()
-            cursor=conn.cursor()
+            connection = DatabaseManager.get_db_connection()
+            cursor = connection.cursor()
 
             cursor.execute("SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id))
             user_id=cursor.fetchone()
-            conn.commit()
+            connection.commit()
 
             cursor.execute("SELECT balance FROM wallets WHERE wallet_id=%s", (wallet_id))
             wallet_id=cursor.fetchone()
-            conn.commit()
+            connection.commit()
 
             cursor.execute("SELECT amount FROM transactions WHERE transaction_id=%s", (transaction_id))
             transaction_id=cursor.fetchone()
-            conn.commit()
+            connection.commit()
 
             subject="Credited Funds"
             message_body=(
@@ -129,8 +129,8 @@ class EmailTransactionService:
             smtp_user.send_email_notification(user_email, subject, message_body)
 
         except Exception as e:
-            conn.rollback()
+            connection.rollback()
             return jsonify({"error": (e)}), 500
         finally:
-            conn.close()
+            connection.close()
             cursor.close()

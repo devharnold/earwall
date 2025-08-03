@@ -8,7 +8,7 @@ import psycopg2
 import os
 from os import getenv
 from dotenv import load_dotenv
-from backend.engine.db_storage import get_db_connection
+from backend.engine.db_storage import DatabaseManager
 
 load_dotenv()
 

@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, request, Blueprint
 from dotenv import load_dotenv
 from backend.walletService.models.wallet import Wallet
+from backend.walletService.grpc_client.transactionClient import transaction_client
 
 app_views = Blueprint('app_views', __name__)
 
-#Route to create cashwallet 
+
+#Route to create cashwallet
 @app_views.route('/', methods=['POST'])
 def create_wallet():
     # create a wallet
@@ -20,6 +22,7 @@ def create_wallet():
         return jsonify({"message": "Wallet successfully created"}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 #Route to view detailed cashwallet information
 @app_views.route('/<int:wallet_id>/wallet', methods=['GET'])
@@ -39,7 +42,7 @@ def get_wallet_data(wallet_id):
     except Exception as e:
         return jsonify({"error": {e}}), 500
 
-    
+
 # Route to view balance
 @app_views.route('/<int:wallet_id>/wallet', methods=['GET'])
 def get_wallet_balance(wallet_id):
@@ -56,18 +59,18 @@ def get_wallet_balance(wallet_id):
             return jsonify({"error": "Balance not found!"}), 404
     except Exception as e:
         return jsonify({"error": {e}}), 500
-    
+
 
 #Route to make Transaction
-#@app_views.route('<int:wallet_id>/wallet/transact', methods=['POST'])
-#def make_transaction(wallet_id):
-#    try:
-#        wallet = transaction_client.make_transaction(wallet_id)
-#        if wallet:
-#            return jsonify({
-#                "balance": wallet.balance
-#            }), 200
-#        else:
-#            return jsonify({"error": "Transaction failed!"}), 400
-#    except Exception as e:
-#        return jsonify({"error": {e}}), 500
+@app_views.route('<int:wallet_id>/wallet/transact', methods=['POST'])
+def make_transaction(wallet_id):
+    try:
+        wallet = transaction_client.process_transaction(wallet_id)
+        if wallet:
+            return jsonify({
+                "balance": wallet.balance
+            }), 200
+        else:
+            return jsonify({"error": "Transaction failed!"}), 400
+    except Exception as e:
+        return jsonify({"error": {e}}), 500

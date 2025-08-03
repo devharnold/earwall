@@ -8,7 +8,7 @@ from backend.userService.models.user import User
 from backend.models.baseModel import BaseModel
 from flask import jsonify, request
 import uuid
-from backend.engine.db_storage import get_db_connection
+from backend.engine.db_storage import DatabaseManager
 
 
 class Wallet(BaseModel):
@@ -31,7 +31,7 @@ class Wallet(BaseModel):
 
         try:
             # Database operations
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
 
             insert_query = """
@@ -58,7 +58,7 @@ class Wallet(BaseModel):
 
         try:
             # Establish database connection
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
 
             # SQL query to fetch wallet data
@@ -89,7 +89,7 @@ class Wallet(BaseModel):
     def fetch_wallet_balance(self, wallet_id):
         # Get wallet balance
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
 
             cursor.execute("SELECT balance FROM wallets WHERE wallet_id = %s", (wallet_id))

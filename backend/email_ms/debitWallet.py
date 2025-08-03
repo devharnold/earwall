@@ -3,9 +3,8 @@ import os
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from backend.models.user import User
-from backend.mpesa.b2cmpesa import withdraw_to_mpesa
-from backend.engine.db_storage import get_db_connection
+from backend.userService.models.user import User
+from backend.engine.db_storage import DatabaseManager
 from flask import jsonify
 
 class EmailDebitWallet:
@@ -50,7 +49,7 @@ class EmailDebitWallet:
     def debit_wallet_app(smtp_user, user_email, user_id, amount, transaction_id, wallet_id):
         """Sends email notification to the user after funds transfer from Mpesa to the app"""
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
 
             cursor.execute(
