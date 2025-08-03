@@ -5,8 +5,8 @@ import smtplib
 from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from backend.models.user import User
-from backend.engine.db_storage import get_db_connection
+from backend.userService.models.user import User
+from backend.engine.db_storage import DatabaseManager
 from flask import jsonify
 
 class RegularEmailService:
@@ -53,7 +53,7 @@ class RegularEmailService:
     def send_welcome_mail(smtp_user, user_id, user_email):
         # Sends a Welcome mail to the user after signing up for our platform
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
             cursor.execute(
                 "SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id)
@@ -80,7 +80,7 @@ class RegularEmailService:
     def send_password_reset_email(smtp_user, first_name, last_name, user_id, user_email):
         # Sends an email notification to a user after a password update
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
             cursor.execute("SELECT first_name, last_name FROM users WHERE user_id=%s", (user_id))
             first_name=cursor.fetchone()[0]

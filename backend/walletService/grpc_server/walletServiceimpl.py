@@ -1,7 +1,7 @@
 import grpc
 from backend.walletService.models.wallet import Wallet
 from backend.walletService.grpc_protos import wallet_pb2, wallet_pb2_grpc
-from backend.engine.db_storage import get_db_connection
+from backend.engine.db_storage import DatabaseManager
 
 class WalletService(wallet_pb2_grpc.WalletServiceServicer):
     def get_wallet_balance(self, request, context):
@@ -25,7 +25,7 @@ class WalletService(wallet_pb2_grpc.WalletServiceServicer):
 
     def transfer_funds(self, request, context):
         try:
-            connection = get_db_connection()
+            connection = DatabaseManager.get_db_connection()
             cursor = connection.cursor()
 
             # locking sender row
@@ -47,6 +47,6 @@ class WalletService(wallet_pb2_grpc.WalletServiceServicer):
             cursor.execute("UPDATE wallets SET balance = balance + %s WHERE wallet_id = %s",
                            (request.amount, request.to_wallet))
             
-            return wallet_pb2.TransferResponse(success=True, message="Funds successfully transfered")
+            return wallet_pb2.TransferResponse(success=True, message="Funds successfully transferred")
         except grpc.RpcError as e:
             return wallet_pb2.TransferResponse(success=False, message=str(e))

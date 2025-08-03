@@ -1,5 +1,5 @@
 import grpc
-from backend.userService.grpc_protos import user_pb2_grpc, user_pb2
+from backend.userService.grpc_protos import user_pb2, user_pb2_grpc
 
 def get_authenticate_user(user_id):
     with grpc.insecure_channel('localhost:50051') as channel:
